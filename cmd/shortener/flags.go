@@ -11,7 +11,7 @@ import (
 var flagRunAddr string
 
 // Базовый адрес результирующего сокращённого URL
-var flagBaseUrl string
+var flagBaseURL string
 
 // parseFlags обрабатывает аргументы командной строки
 // и сохраняет их значения в соответствующих переменных
@@ -43,12 +43,12 @@ func parseFlags() {
 	}
 
 	fmt.Println("53")
-	if cfg.EnvBaseUrl != "" {
-		flagBaseUrl = cfg.EnvBaseUrl
+	if cfg.EnvBaseURL != "" {
+		flagBaseURL = cfg.EnvBaseURL
 	} else {
 		// регистрируем переменную flagRunAddr
 		// как аргумент -b со значением http://localhost:8000 по умолчанию
-		flag.StringVar(&flagBaseUrl, "b", cfg.DefaultBaseUrl, "address and port for base link")
+		flag.StringVar(&flagBaseURL, "b", cfg.DefaultBaseURL, "address and port for base link")
 	}
 
 	// парсим переданные серверу аргументы в зарегистрированные переменные

@@ -6,9 +6,9 @@ import (
 
 type Config struct {
 	DefaultRunAddr string
-	DefaultBaseUrl string
+	DefaultBaseURL string
 	EnvRunAddr     string `env:"SERVER_ADDRESS"`
-	EnvBaseUrl     string `env:"BASE_URL"`
+	EnvBaseURL     string `env:"BASE_URL"`
 }
 
 func NewConfig() *Config {
@@ -17,7 +17,7 @@ func NewConfig() *Config {
 	env.Parse(&cfg)
 
 	cfg.DefaultRunAddr = ":8080"
-	cfg.DefaultBaseUrl = "http://localhost:8080"
+	cfg.DefaultBaseURL = "http://localhost:8080"
 
 	return &cfg
 }

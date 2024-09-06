@@ -1,16 +1,19 @@
 package main
 
 import (
-	"crypto/md5"
-	"encoding/hex"
+	"crypto/sha256"
+	"encoding/base64"
 	"io"
 	"net/http"
 	"strings"
 )
 
+// Таблица со ссылками
 var tableUrl = make(map[string]string)
 
 func postPage(w http.ResponseWriter, r *http.Request) {
+
+	// Получаем ссылку из body
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -18,21 +21,28 @@ func postPage(w http.ResponseWriter, r *http.Request) {
 	}
 	url := strings.TrimSpace(string(body))
 
-	h := md5.New()
+	// Генерируем короткую ссылку
+	h := sha256.New()
 	h.Write([]byte(url))
-	shortUrl := hex.EncodeToString(h.Sum(nil))
+	hashString := base64.StdEncoding.EncodeToString(h.Sum(nil))
+	shortUrl := hashString[:10]
 
+	// Сохраняем короткую ссылку
 	tableUrl[shortUrl] = url
 	response := "http://localhost:8080/" + shortUrl
 
+	// Выводим новую ссылку на экран
 	w.Header().Set("content-type", "text/plain")
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte(response))
 }
 
 func getPage(w http.ResponseWriter, r *http.Request) {
+
+	// Получаем короткую ссылку
 	shortUrl := strings.Trim(string(r.RequestURI), " /")
 
+	// Ищем ссылку в таблице
 	url, ok := tableUrl[shortUrl]
 	if ok {
 		w.Header().Set("Location", url)

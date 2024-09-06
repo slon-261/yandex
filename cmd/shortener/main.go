@@ -9,7 +9,7 @@ import (
 )
 
 // Таблица со ссылками
-var tableUrl = make(map[string]string)
+var tableURL = make(map[string]string)
 
 func postPage(w http.ResponseWriter, r *http.Request) {
 
@@ -25,11 +25,11 @@ func postPage(w http.ResponseWriter, r *http.Request) {
 	h := sha256.New()
 	h.Write([]byte(url))
 	hashString := base64.StdEncoding.EncodeToString(h.Sum(nil))
-	shortUrl := hashString[:10]
+	shortURL := hashString[:10]
 
 	// Сохраняем короткую ссылку
-	tableUrl[shortUrl] = url
-	response := "http://localhost:8080/" + shortUrl
+	tableURL[shortURL] = url
+	response := "http://localhost:8080/" + shortURL
 
 	// Выводим новую ссылку на экран
 	w.Header().Set("content-type", "text/plain")
@@ -40,10 +40,10 @@ func postPage(w http.ResponseWriter, r *http.Request) {
 func getPage(w http.ResponseWriter, r *http.Request) {
 
 	// Получаем короткую ссылку
-	shortUrl := strings.Trim(string(r.RequestURI), " /")
+	shortURL := strings.Trim(string(r.RequestURI), " /")
 
 	// Ищем ссылку в таблице
-	url, ok := tableUrl[shortUrl]
+	url, ok := tableURL[shortURL]
 	if ok {
 		w.Header().Set("Location", url)
 		w.WriteHeader(http.StatusTemporaryRedirect)

@@ -31,7 +31,7 @@ func postPage(w http.ResponseWriter, r *http.Request) {
 
 	// Сохраняем короткую ссылку
 	tableURL[shortURL] = url
-	response := flagBaseAddr + "/" + shortURL
+	response := flagBaseUrl + "/" + shortURL
 
 	// Выводим новую ссылку на экран
 	w.Header().Set("content-type", "text/plain")

@@ -1,14 +1,23 @@
 package config
 
+import (
+	"github.com/caarlos0/env"
+)
+
 type Config struct {
-	RunAddr  string
-	BaseAddr string
+	DefaultRunAddr string
+	DefaultBaseUrl string
+	EnvRunAddr     string `env:"SERVER_ADDRESS"`
+	EnvBaseUrl     string `env:"BASE_URL"`
 }
 
 func NewConfig() *Config {
 
-	return &Config{
-		RunAddr:  ":8080",
-		BaseAddr: "http://localhost:8080",
-	}
+	var cfg Config
+	env.Parse(&cfg)
+
+	cfg.DefaultRunAddr = ":8080"
+	cfg.DefaultBaseUrl = "http://localhost:8080"
+
+	return &cfg
 }

@@ -2,6 +2,8 @@ package main
 
 import (
 	"flag"
+	"fmt"
+	"log"
 	"slon-261/yandex/cmd/config"
 )
 
@@ -9,20 +11,46 @@ import (
 var flagRunAddr string
 
 // Базовый адрес результирующего сокращённого URL
-var flagBaseAddr string
+var flagBaseUrl string
 
 // parseFlags обрабатывает аргументы командной строки
 // и сохраняет их значения в соответствующих переменных
 func parseFlags() {
 
-	config := config.NewConfig()
+	fmt.Println("1")
+	cfg := config.NewConfig()
+	fmt.Println("2")
 
-	// регистрируем переменную flagRunAddr
-	// как аргумент -a со значением http://localhost:8080 по умолчанию
-	flag.StringVar(&flagRunAddr, "a", config.RunAddr, "address and port to run server")
-	// регистрируем переменную flagRunAddr
-	// как аргумент -b со значением http://localhost:8000 по умолчанию
-	flag.StringVar(&flagBaseAddr, "b", config.BaseAddr, "address and port for base link")
+	fmt.Println("3")
+	//if err != nil {
+	//
+	//	fmt.Println("55")
+	//	log.Fatal(err)
+	//}
+	log.Print(cfg)
+
+	fmt.Println("4")
+	//Приоритет параметров сервера должен быть таким:
+	//Если указана переменная окружения, то используется она.
+	//Если нет переменной окружения, но есть аргумент командной строки (флаг), то используется он.
+	//Если нет ни переменной окружения, ни флага, то используется значение по умолчанию.
+	if cfg.EnvRunAddr != "" {
+		flagRunAddr = cfg.EnvRunAddr
+	} else {
+		// регистрируем переменную flagRunAddr
+		// как аргумент -a со значением http://localhost:8080 по умолчанию
+		flag.StringVar(&flagRunAddr, "a", cfg.DefaultRunAddr, "address and port to run server")
+	}
+
+	fmt.Println("53")
+	if cfg.EnvBaseUrl != "" {
+		flagBaseUrl = cfg.EnvBaseUrl
+	} else {
+		// регистрируем переменную flagRunAddr
+		// как аргумент -b со значением http://localhost:8000 по умолчанию
+		flag.StringVar(&flagBaseUrl, "b", cfg.DefaultBaseUrl, "address and port for base link")
+	}
+
 	// парсим переданные серверу аргументы в зарегистрированные переменные
 	flag.Parse()
 }

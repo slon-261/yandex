@@ -19,6 +19,9 @@ func TestPostPage(t *testing.T) {
 	// останавливаем сервер после завершения теста
 	defer srv.Close()
 
+	// Парсим флаги (в том числе, чтобы задать flagBaseAddr
+	parseFlags()
+
 	// описываем набор данных: метод запроса, ожидаемый код ответа, ожидаемое тело
 	testCases := []struct {
 		method       string
@@ -40,11 +43,9 @@ func TestPostPage(t *testing.T) {
 			req.Method = tc.method
 			req.URL = srv.URL + tc.target
 			req.Body = tc.body
-			t.Log(req.URL)
 
 			resp, err := req.Send()
 			assert.NoError(t, err, "error making HTTP request")
-
 			assert.Equal(t, tc.expectedCode, resp.StatusCode(), "Response code didn't match expected")
 			// проверяем корректность полученного тела ответа, если мы его ожидаем
 			if tc.expectedBody != "" {
@@ -82,7 +83,6 @@ func TestGetPage(t *testing.T) {
 			req := resty.New().R()
 			req.Method = tc.method
 			req.URL = srv.URL + tc.target
-			t.Log(req.URL)
 
 			resp, err := req.Send()
 			assert.NoError(t, err, "error making HTTP request")

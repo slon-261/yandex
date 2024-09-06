@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/sha256"
 	"encoding/base64"
+	"github.com/go-chi/chi/v5"
 	"io"
 	"net/http"
 	"strings"
@@ -40,7 +41,7 @@ func postPage(w http.ResponseWriter, r *http.Request) {
 func getPage(w http.ResponseWriter, r *http.Request) {
 
 	// Получаем короткую ссылку
-	shortURL := strings.Trim(string(r.RequestURI), " /")
+	shortURL := chi.URLParam(r, "url")
 
 	// Ищем ссылку в таблице
 	url, ok := tableURL[shortURL]
@@ -50,25 +51,14 @@ func getPage(w http.ResponseWriter, r *http.Request) {
 	} else {
 		w.WriteHeader(http.StatusBadRequest)
 	}
-
-}
-
-func urlPage(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodPost {
-		postPage(w, r)
-	} else if r.Method == http.MethodGet {
-		getPage(w, r)
-	} else {
-		return
-	}
 }
 
 func main() {
 
-	http.HandleFunc(`/`, urlPage)
+	r := chi.NewRouter()
+	r.Post("/", postPage)
+	r.Get("/{url}", getPage)
 
-	err := http.ListenAndServe(`:8080`, nil)
-	if err != nil {
-		panic(err)
-	}
+	// r передаётся как http.Handler
+	http.ListenAndServe(":8080", r)
 }

@@ -42,7 +42,8 @@ func postPage(w http.ResponseWriter, r *http.Request) {
 func getPage(w http.ResponseWriter, r *http.Request) {
 
 	// Получаем короткую ссылку
-	shortURL := chi.URLParam(r, "url")
+	//shortURL := chi.URLParam(r, "url")
+	shortURL := strings.Trim(string(r.RequestURI), " /")
 
 	// Ищем ссылку в таблице
 	url, ok := tableURL[shortURL]

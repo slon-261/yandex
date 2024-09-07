@@ -2,8 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
-	"log"
 	"slon-261/yandex/cmd/config"
 )
 
@@ -17,19 +15,8 @@ var flagBaseURL string
 // и сохраняет их значения в соответствующих переменных
 func parseFlags() {
 
-	fmt.Println("1")
 	cfg := config.NewConfig()
-	fmt.Println("2")
 
-	fmt.Println("3")
-	//if err != nil {
-	//
-	//	fmt.Println("55")
-	//	log.Fatal(err)
-	//}
-	log.Print(cfg)
-
-	fmt.Println("4")
 	//Приоритет параметров сервера должен быть таким:
 	//Если указана переменная окружения, то используется она.
 	//Если нет переменной окружения, но есть аргумент командной строки (флаг), то используется он.
@@ -42,7 +29,6 @@ func parseFlags() {
 		flag.StringVar(&flagRunAddr, "a", cfg.DefaultRunAddr, "address and port to run server")
 	}
 
-	fmt.Println("53")
 	if cfg.EnvBaseURL != "" {
 		flagBaseURL = cfg.EnvBaseURL
 	} else {

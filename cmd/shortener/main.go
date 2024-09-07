@@ -27,6 +27,8 @@ func postPage(w http.ResponseWriter, r *http.Request) {
 	h := sha256.New()
 	h.Write([]byte(url))
 	hashString := base64.StdEncoding.EncodeToString(h.Sum(nil))
+	// Удаляем / из корткой ссылки
+	hashString = strings.ReplaceAll(hashString, "/", "")
 	shortURL := hashString[:10]
 
 	// Сохраняем короткую ссылку

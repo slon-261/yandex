@@ -3,9 +3,9 @@ package main
 import (
 	"crypto/sha256"
 	"encoding/base64"
-	"fmt"
 	"github.com/go-chi/chi/v5"
 	"io"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -27,7 +27,7 @@ func postPage(w http.ResponseWriter, r *http.Request) {
 	h := sha256.New()
 	h.Write([]byte(url))
 	hashString := base64.StdEncoding.EncodeToString(h.Sum(nil))
-	// Удаляем / из корткой ссылки
+	// Удаляем / из короткой ссылки
 	hashString = strings.ReplaceAll(hashString, "/", "")
 	shortURL := hashString[:10]
 
@@ -65,7 +65,7 @@ func main() {
 	r.Post("/", postPage)
 	r.Get("/{url}", getPage)
 
-	fmt.Println("Running server on", flagRunAddr)
+	log.Print("Running server on ", flagRunAddr)
 
 	// r передаётся как http.Handler
 	http.ListenAndServe(flagRunAddr, r)

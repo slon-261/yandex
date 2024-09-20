@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-// Таблица со ссылками
+// Хэш-таблица со ссылками
 var tableURL = make(map[string]string)
 
 func postPage(w http.ResponseWriter, r *http.Request) {
@@ -23,13 +23,7 @@ func postPage(w http.ResponseWriter, r *http.Request) {
 	}
 	url := strings.TrimSpace(string(body))
 
-	// Генерируем короткую ссылку
-	h := sha256.New()
-	h.Write([]byte(url))
-	hashString := base64.StdEncoding.EncodeToString(h.Sum(nil))
-	// Удаляем / из короткой ссылки
-	hashString = strings.ReplaceAll(hashString, "/", "")
-	shortURL := hashString[:10]
+	shortURL := encryption(url)
 
 	// Сохраняем короткую ссылку
 	tableURL[shortURL] = url
@@ -57,11 +51,25 @@ func getPage(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func encryption(str string) string {
+	// Генерируем короткую ссылку
+	h := sha256.New()
+	h.Write([]byte(str))
+	hashString := base64.StdEncoding.EncodeToString(h.Sum(nil))
+	// Удаляем / из короткой ссылки
+	hashString = strings.ReplaceAll(hashString, "/", "")
+	return hashString[:10]
+}
+
+func createRouter() *chi.Mux {
+	return chi.NewRouter()
+}
+
 func main() {
 	// обрабатываем аргументы командной строки
 	parseFlags()
 
-	r := chi.NewRouter()
+	r := createRouter()
 	r.Post("/", postPage)
 	r.Get("/{url}", getPage)
 

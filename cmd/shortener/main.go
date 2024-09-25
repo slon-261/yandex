@@ -4,9 +4,11 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"github.com/go-chi/chi/v5"
+	"go.uber.org/zap"
 	"io"
 	"log"
 	"net/http"
+	l "slon-261/yandex/internal/logger"
 	"strings"
 )
 
@@ -62,7 +64,14 @@ func encryption(str string) string {
 }
 
 func createRouter() *chi.Mux {
-	return chi.NewRouter()
+	logger, _ := zap.NewProduction()
+	defer logger.Sync()
+
+	r := chi.NewRouter()
+	r.Use(l.RequestLogger(logger))
+	r.Post("/", postPage)
+	r.Get("/{url}", getPage)
+	return r
 }
 
 func main() {
@@ -70,8 +79,6 @@ func main() {
 	parseFlags()
 
 	r := createRouter()
-	r.Post("/", postPage)
-	r.Get("/{url}", getPage)
 
 	log.Print("Running server on ", flagRunAddr)
 

@@ -22,7 +22,7 @@ func postPage(w http.ResponseWriter, r *http.Request) {
 	// Получаем ссылку из body
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	url := strings.TrimSpace(string(body))
@@ -44,7 +44,7 @@ func postJSONPage(w http.ResponseWriter, r *http.Request) {
 	// Получаем ссылку из body
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -86,6 +86,7 @@ func getPage(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusTemporaryRedirect)
 	} else {
 		w.WriteHeader(http.StatusBadRequest)
+		http.Error(w, "Not found", http.StatusBadRequest)
 	}
 }
 

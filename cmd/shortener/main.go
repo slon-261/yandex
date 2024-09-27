@@ -39,7 +39,7 @@ func postPage(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(response))
 }
 
-func postJsonPage(w http.ResponseWriter, r *http.Request) {
+func postJSONPage(w http.ResponseWriter, r *http.Request) {
 
 	// Получаем ссылку из body
 	body, err := io.ReadAll(r.Body)
@@ -106,7 +106,7 @@ func createRouter() *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(l.RequestLogger(logger))
 	r.Post("/", postPage)
-	r.Post("/api/shorten", postJsonPage)
+	r.Post("/api/shorten", postJSONPage)
 	r.Get("/{url}", getPage)
 	return r
 }

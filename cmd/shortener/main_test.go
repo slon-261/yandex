@@ -64,7 +64,7 @@ func TestPostJsonPage(t *testing.T) {
 			w := httptest.NewRecorder()
 
 			// вызовем хендлер как обычную функцию, без запуска самого сервера
-			postJsonPage(w, r)
+			postJSONPage(w, r)
 
 			assert.Equal(t, tc.expectedCode, w.Code, "Код ответа не совпадает с ожидаемым")
 			// проверим корректность полученного тела ответа, если мы его ожидаем

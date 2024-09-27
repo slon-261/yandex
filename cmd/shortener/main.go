@@ -54,10 +54,10 @@ func postJSONPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	shortURL := encryption(req.Url)
+	shortURL := encryption(req.URL)
 
 	// Сохраняем короткую ссылку
-	tableURL[shortURL] = req.Url
+	tableURL[shortURL] = req.URL
 	var resp models.Response
 	resp.Result = flagBaseURL + "/" + shortURL
 

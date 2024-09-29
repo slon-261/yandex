@@ -110,6 +110,7 @@ func main() {
 	r := createRouter()
 
 	log.Print("Running server on ", flagRunAddr)
+	log.Print("File storage is ", flagFilePath)
 
 	// r передаётся как http.Handler
 	http.ListenAndServe(flagRunAddr, r)

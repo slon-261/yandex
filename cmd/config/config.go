@@ -5,10 +5,12 @@ import (
 )
 
 type Config struct {
-	DefaultRunAddr string
-	DefaultBaseURL string
-	EnvRunAddr     string `env:"SERVER_ADDRESS"`
-	EnvBaseURL     string `env:"BASE_URL"`
+	DefaultRunAddr  string
+	DefaultBaseURL  string
+	DefaultFilePath string
+	EnvRunAddr      string `env:"SERVER_ADDRESS"`
+	EnvBaseURL      string `env:"BASE_URL"`
+	EnvFilePath     string `env:"FILE_STORAGE_PATH"`
 }
 
 func NewConfig() *Config {
@@ -18,6 +20,7 @@ func NewConfig() *Config {
 
 	cfg.DefaultRunAddr = ":8080"
 	cfg.DefaultBaseURL = "http://localhost:8080"
+	cfg.DefaultFilePath = "data.txt"
 
 	return &cfg
 }

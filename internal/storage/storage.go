@@ -9,24 +9,7 @@ import (
 	"log"
 	"os"
 	"strings"
-	"sync"
 )
-
-type autoInc struct {
-	sync.Mutex
-	id int
-}
-
-func (a *autoInc) ID() (id int) {
-	a.Lock()
-	defer a.Unlock()
-
-	id = a.id
-	a.id++
-	return
-}
-
-var ai autoInc // Глобальная переменная
 
 // Информация о ссылке
 type URL struct {
@@ -42,10 +25,11 @@ type Storage struct {
 	urls    map[string]URL
 }
 
+// Создаём короткую ссылку
 func (storage *Storage) CreateShortURL(originalURL string) string {
-
+	// Получаем хэш
 	shortURL := encryption(originalURL)
-
+	// Ищем ссылку в хранилище. Если не нашли - добавляем
 	_, err := storage.GetURL(shortURL)
 	if err != nil {
 		newURL := URL{
@@ -53,27 +37,32 @@ func (storage *Storage) CreateShortURL(originalURL string) string {
 			OriginalURL: originalURL,
 			UUID:        len(storage.urls) + 1,
 		}
+		// Добавляем данные в мапу
 		storage.urls[shortURL] = newURL
 
 		data, _ := json.Marshal(&newURL)
 		// добавляем перенос строки
 		data = append(data, '\n')
 
+		// Добавляем данные в файл
 		storage.file.Write(data)
 	}
 
+	// Возвращаем короткую ссылку
 	return shortURL
 }
 
+// Ищем ссылку в хранилище
 func (storage *Storage) GetURL(shortURL string) (string, error) {
 	url, ok := storage.urls[shortURL]
 	if ok {
 		return url.OriginalURL, nil
 	} else {
-		return "", errors.New("Not found")
+		return "", errors.New("NOT_FOUND")
 	}
 }
 
+// Загружаем из файла все ранее сгенерированные ссылки
 func (storage *Storage) Load(filename string) error {
 	var err error
 	storage.file, err = os.OpenFile(filename, os.O_RDONLY|os.O_CREATE, 0666)

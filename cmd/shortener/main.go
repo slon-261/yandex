@@ -76,7 +76,7 @@ func getPage(w http.ResponseWriter, r *http.Request) {
 	//shortURL := chi.URLParam(r, "url")
 	shortURL := strings.Trim(string(r.RequestURI), " /")
 
-	// Ищем ссылку в таблице
+	// Ищем ссылку в хранилище
 	url, err := storage.GetURL(shortURL)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -92,9 +92,9 @@ func createRouter() *chi.Mux {
 	defer logger.Sync()
 
 	r := chi.NewRouter()
-	r.Use(l.RequestLogger(logger))
-	r.Use(middleware.Compress(5))
-	r.Use(d.Decompress)
+	r.Use(l.RequestLogger(logger)) // Логгирование
+	r.Use(middleware.Compress(5))  // Сжатие ответа
+	r.Use(d.Decompress)            // Распаковка сжатого запроса
 	r.Post("/", postPage)
 	r.Post("/api/shorten", postJSONPage)
 	r.Get("/{url}", getPage)
@@ -104,7 +104,7 @@ func createRouter() *chi.Mux {
 func main() {
 	// обрабатываем аргументы командной строки
 	parseFlags()
-
+	// Загружаем из файла все ранее сгенерированные ссылки
 	storage.Load(flagFilePath)
 
 	r := createRouter()

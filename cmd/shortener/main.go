@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"go.uber.org/zap"
 	"io"
 	"log"
@@ -106,6 +107,7 @@ func createRouter() *chi.Mux {
 
 	r := chi.NewRouter()
 	r.Use(l.RequestLogger(logger))
+	r.Use(middleware.Compress(5))
 	r.Post("/", postPage)
 	r.Post("/api/shorten", postJSONPage)
 	r.Get("/{url}", getPage)

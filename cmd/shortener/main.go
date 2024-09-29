@@ -10,6 +10,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	d "slon-261/yandex/internal/decompress"
 	l "slon-261/yandex/internal/logger"
 	"slon-261/yandex/internal/models"
 	"strings"
@@ -108,6 +109,7 @@ func createRouter() *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(l.RequestLogger(logger))
 	r.Use(middleware.Compress(5))
+	r.Use(d.Decompress)
 	r.Post("/", postPage)
 	r.Post("/api/shorten", postJSONPage)
 	r.Get("/{url}", getPage)

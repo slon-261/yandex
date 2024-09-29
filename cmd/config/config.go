@@ -20,7 +20,7 @@ func NewConfig() *Config {
 
 	cfg.DefaultRunAddr = ":8080"
 	cfg.DefaultBaseURL = "http://localhost:8080"
-	cfg.DefaultFilePath = "data.txt"
+	cfg.DefaultFilePath = "tmp/data.txt"
 
 	return &cfg
 }

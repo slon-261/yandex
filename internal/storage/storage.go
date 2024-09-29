@@ -8,6 +8,7 @@ import (
 	"errors"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -65,7 +66,11 @@ func (storage *Storage) GetURL(shortURL string) (string, error) {
 // Загружаем из файла все ранее сгенерированные ссылки
 func (storage *Storage) Load(filename string) error {
 	var err error
+	// Пытаемся создать директорию
+	os.MkdirAll(filepath.Dir(filename), 0666)
+	// Создаём файл
 	storage.file, err = os.OpenFile(filename, os.O_RDONLY|os.O_CREATE, 0666)
+
 	if err != nil {
 		return err
 	}

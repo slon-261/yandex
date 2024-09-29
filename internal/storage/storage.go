@@ -93,6 +93,10 @@ func (storage *Storage) Load(filename string) error {
 	return nil
 }
 
+func (storage *Storage) Close() error {
+	return storage.file.Close()
+}
+
 func encryption(str string) string {
 	// Генерируем короткую ссылку
 	h := sha256.New()

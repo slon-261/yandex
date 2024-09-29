@@ -112,6 +112,7 @@ func main() {
 	parseFlags()
 	// Загружаем из файла все ранее сгенерированные ссылки
 	storage.Load(flagFilePath)
+	defer storage.Close()
 
 	r := createRouter()
 

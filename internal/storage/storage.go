@@ -68,7 +68,7 @@ func (storage *Storage) Load(filename string) error {
 	// Пытаемся создать директорию
 	os.MkdirAll(filepath.Dir(filename), 0666)
 	// Создаём файл
-	storage.file, err = os.OpenFile(filename, os.O_RDONLY|os.O_CREATE, 0666)
+	storage.file, err = os.OpenFile(filename, os.O_RDWR|os.O_CREATE, 0666)
 
 	if err != nil {
 		return err

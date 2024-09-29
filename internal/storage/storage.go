@@ -6,7 +6,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -81,12 +80,10 @@ func (storage *Storage) Load(filename string) error {
 	for storage.scanner.Scan() {
 		// читаем данные из scanner
 		data := storage.scanner.Bytes()
+
 		url := URL{}
-		log.Print(url)
 		err := json.Unmarshal(data, &url)
 
-		log.Print(err)
-		log.Print(url)
 		storage.urls[url.ShortURL] = url
 
 		if err != nil {

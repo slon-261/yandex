@@ -102,6 +102,12 @@ func createRouter() *chi.Mux {
 }
 
 func main() {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Print("Panic occurred: ", r)
+		}
+	}()
+
 	// обрабатываем аргументы командной строки
 	parseFlags()
 	// Загружаем из файла все ранее сгенерированные ссылки

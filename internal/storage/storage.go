@@ -9,11 +9,12 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 )
 
 // Информация о ссылке
 type URL struct {
-	UUID        int    `json:"uuid"`
+	Id          int    `json:"id"`
 	ShortURL    string `json:"short_url"`
 	OriginalURL string `json:"original_url"`
 }
@@ -23,6 +24,7 @@ type Storage struct {
 	file    *os.File
 	scanner *bufio.Scanner
 	urls    map[string]URL
+	mu      sync.Mutex
 }
 
 // Создаём короткую ссылку
@@ -35,7 +37,7 @@ func (storage *Storage) CreateShortURL(originalURL string) string {
 		newURL := URL{
 			ShortURL:    shortURL,
 			OriginalURL: originalURL,
-			UUID:        len(storage.urls) + 1,
+			Id:          len(storage.urls) + 1,
 		}
 		// Добавляем данные в мапу
 		storage.urls[shortURL] = newURL
@@ -54,6 +56,8 @@ func (storage *Storage) CreateShortURL(originalURL string) string {
 
 // Ищем ссылку в хранилище
 func (storage *Storage) GetURL(shortURL string) (string, error) {
+	storage.mu.Lock()
+	defer storage.mu.Unlock()
 	url, ok := storage.urls[shortURL]
 	if ok {
 		return url.OriginalURL, nil

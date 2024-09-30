@@ -23,7 +23,7 @@ func postPage(w http.ResponseWriter, r *http.Request) {
 	// Получаем ссылку из body
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Body error", http.StatusBadRequest)
 		return
 	}
 	originalURL := strings.TrimSpace(string(body))
@@ -43,13 +43,13 @@ func postJSONPage(w http.ResponseWriter, r *http.Request) {
 	// Получаем ссылку из body
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Body error", http.StatusBadRequest)
 		return
 	}
 
 	var req models.Request
 	if err = json.Unmarshal([]byte(body), &req); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "JSON error", http.StatusBadRequest)
 		return
 	}
 
@@ -60,7 +60,7 @@ func postJSONPage(w http.ResponseWriter, r *http.Request) {
 
 	responseJSON, err := json.MarshalIndent(resp, "", "   ")
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "JSON error", http.StatusInternalServerError)
 		return
 	}
 
@@ -79,8 +79,7 @@ func getPage(w http.ResponseWriter, r *http.Request) {
 	// Ищем ссылку в хранилище
 	url, err := storage.GetURL(shortURL)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Not found", http.StatusBadRequest)
 	} else {
 		w.Header().Set("Location", url)
 		w.WriteHeader(http.StatusTemporaryRedirect)

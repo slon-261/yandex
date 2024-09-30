@@ -11,6 +11,9 @@ var flagRunAddr string
 // Базовый адрес результирующего сокращённого URL
 var flagBaseURL string
 
+// Путь до файла с короткими ссылками
+var flagFilePath string
+
 // parseFlags обрабатывает аргументы командной строки
 // и сохраняет их значения в соответствующих переменных
 func parseFlags() {
@@ -24,6 +27,10 @@ func parseFlags() {
 	// регистрируем переменную flagRunAddr
 	// как аргумент -b со значением http://localhost:8000 по умолчанию
 	flag.StringVar(&flagBaseURL, "b", cfg.DefaultBaseURL, "address and port for base link")
+
+	// регистрируем переменную flagFilePath
+	// как аргумент -f со значением data.txt по умолчанию
+	flag.StringVar(&flagFilePath, "f", cfg.DefaultFilePath, "address and port for base link")
 
 	// парсим переданные серверу аргументы в зарегистрированные переменные
 	flag.Parse()
@@ -39,4 +46,8 @@ func parseFlags() {
 	if cfg.EnvBaseURL != "" {
 		flagBaseURL = cfg.EnvBaseURL
 	}
+	if cfg.EnvFilePath != "" {
+		flagFilePath = cfg.EnvFilePath
+	}
+
 }

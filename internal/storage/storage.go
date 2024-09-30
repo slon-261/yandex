@@ -14,7 +14,7 @@ import (
 
 // Информация о ссылке
 type URL struct {
-	Id          int    `json:"id"`
+	ID          int    `json:"id"`
 	ShortURL    string `json:"short_url"`
 	OriginalURL string `json:"original_url"`
 }
@@ -37,7 +37,7 @@ func (storage *Storage) CreateShortURL(originalURL string) string {
 		newURL := URL{
 			ShortURL:    shortURL,
 			OriginalURL: originalURL,
-			Id:          len(storage.urls) + 1,
+			ID:          len(storage.urls) + 1,
 		}
 		// Добавляем данные в мапу
 		storage.urls[shortURL] = newURL

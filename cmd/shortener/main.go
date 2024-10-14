@@ -109,8 +109,8 @@ func createRouter() *chi.Mux {
 	r.Use(d.Decompress)            // Распаковка сжатого запроса
 	r.Post("/", postPage)
 	r.Post("/api/shorten", postJSONPage)
-	r.Get("/{url}", getPage)
 	r.Get("/ping", pingPage)
+	r.Get("/{url}", getPage)
 	return r
 }
 
@@ -139,6 +139,7 @@ func main() {
 
 	log.Print("Running server on ", flagRunAddr)
 	log.Print("File storage is ", flagFilePath)
+	log.Print("DB connected at ", flagFilePath)
 
 	// r передаётся как http.Handler
 	http.ListenAndServe(flagRunAddr, r)

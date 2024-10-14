@@ -1,9 +1,11 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"go.uber.org/zap"
 	"io"
 	"log"
@@ -17,6 +19,7 @@ import (
 
 // Хранилище ссылок
 var fs *s.FileStorage
+var db *sql.DB
 
 func postPage(w http.ResponseWriter, r *http.Request) {
 
@@ -86,6 +89,16 @@ func getPage(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func pingPage(w http.ResponseWriter, r *http.Request) {
+	err := db.Ping()
+
+	if err != nil {
+		http.Error(w, "Connect failed", http.StatusInternalServerError)
+	} else {
+		w.WriteHeader(http.StatusOK)
+	}
+}
+
 func createRouter() *chi.Mux {
 	logger, _ := zap.NewProduction()
 	defer logger.Sync()
@@ -97,6 +110,7 @@ func createRouter() *chi.Mux {
 	r.Post("/", postPage)
 	r.Post("/api/shorten", postJSONPage)
 	r.Get("/{url}", getPage)
+	r.Get("/ping", pingPage)
 	return r
 }
 
@@ -114,6 +128,12 @@ func main() {
 	// Загружаем из файла все ранее сгенерированные ссылки
 	fs.Load()
 	defer fs.Close()
+
+	db, err := sql.Open("pgx", flagDataBaseDSN)
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
 
 	r := createRouter()
 

@@ -5,12 +5,14 @@ import (
 )
 
 type Config struct {
-	DefaultRunAddr  string
-	DefaultBaseURL  string
-	DefaultFilePath string
-	EnvRunAddr      string `env:"SERVER_ADDRESS"`
-	EnvBaseURL      string `env:"BASE_URL"`
-	EnvFilePath     string `env:"FILE_STORAGE_PATH"`
+	DefaultRunAddr     string
+	DefaultBaseURL     string
+	DefaultFilePath    string
+	DefaultDataBaseDSN string
+	EnvRunAddr         string `env:"SERVER_ADDRESS"`
+	EnvBaseURL         string `env:"BASE_URL"`
+	EnvFilePath        string `env:"FILE_STORAGE_PATH"`
+	EnvDataBaseDSN     string `env:"DATABASE_DSN"`
 }
 
 func NewConfig() *Config {
@@ -21,6 +23,7 @@ func NewConfig() *Config {
 	cfg.DefaultRunAddr = ":8080"
 	cfg.DefaultBaseURL = "http://localhost:8080"
 	cfg.DefaultFilePath = "tmp/data.txt"
+	cfg.DefaultDataBaseDSN = "host=localhost user=postgres password=postgres dbname=yandex sslmode=disable"
 
 	return &cfg
 }

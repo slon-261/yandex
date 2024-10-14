@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	"net/http/httptest"
+	s "slon-261/yandex/internal/storage"
 	"strings"
 	"testing"
 
@@ -13,8 +14,10 @@ func TestPostPage(t *testing.T) {
 
 	// Парсим флаги (в том числе, чтобы задать flagBaseURL)
 	parseFlags()
+	// Хранилище ссылок
+	fs = s.NewFileStorage(flagFilePath)
 	// Загружаем из файла все ранее сгенерированные ссылки
-	storage.Load(flagFilePath)
+	fs.Load()
 
 	// описываем набор данных: метод запроса, ожидаемый код ответа, ожидаемое тело
 	testCases := []struct {

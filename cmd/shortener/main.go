@@ -16,7 +16,7 @@ import (
 )
 
 // Хранилище ссылок
-var storage = s.Storage{}
+var fs *s.FileStorage
 
 func postPage(w http.ResponseWriter, r *http.Request) {
 
@@ -29,7 +29,7 @@ func postPage(w http.ResponseWriter, r *http.Request) {
 	originalURL := strings.TrimSpace(string(body))
 
 	// Сохраняем короткую ссылку
-	shortURL := storage.CreateShortURL(originalURL)
+	shortURL := fs.CreateShortURL(originalURL)
 	response := flagBaseURL + "/" + shortURL
 
 	// Выводим новую ссылку на экран
@@ -54,7 +54,7 @@ func postJSONPage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Сохраняем короткую ссылку
-	shortURL := storage.CreateShortURL(req.URL)
+	shortURL := fs.CreateShortURL(req.URL)
 	var resp models.Response
 	resp.Result = flagBaseURL + "/" + shortURL
 
@@ -77,7 +77,7 @@ func getPage(w http.ResponseWriter, r *http.Request) {
 	shortURL := strings.Trim(string(r.RequestURI), " /")
 
 	// Ищем ссылку в хранилище
-	url, err := storage.GetURL(shortURL)
+	url, err := fs.GetURL(shortURL)
 	if err != nil {
 		http.Error(w, "Not found", http.StatusBadRequest)
 	} else {
@@ -109,9 +109,11 @@ func main() {
 
 	// обрабатываем аргументы командной строки
 	parseFlags()
+	// Хранилище ссылок
+	fs = s.NewFileStorage(flagFilePath)
 	// Загружаем из файла все ранее сгенерированные ссылки
-	storage.Load(flagFilePath)
-	defer storage.Close()
+	fs.Load()
+	defer fs.Close()
 
 	r := createRouter()
 

@@ -22,8 +22,8 @@ func NewConfig() *Config {
 
 	cfg.DefaultRunAddr = ":8080"
 	cfg.DefaultBaseURL = "http://localhost:8080"
-	cfg.DefaultFilePath = "tmp/data.txt"
-	cfg.DefaultDataBaseDSN = "host=localhost port=5432 user=postgres password=postgres dbname=yandex sslmode=disable"
+	cfg.DefaultFilePath = ""
+	cfg.DefaultDataBaseDSN = ""
 
 	return &cfg
 }

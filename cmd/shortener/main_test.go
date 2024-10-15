@@ -14,10 +14,11 @@ func TestPostPage(t *testing.T) {
 
 	// Парсим флаги (в том числе, чтобы задать flagBaseURL)
 	parseFlags()
-	// Хранилище ссылок
-	fs = s.NewFileStorage(flagFilePath)
-	// Загружаем из файла все ранее сгенерированные ссылки
-	fs.Load()
+
+	storage = s.NewStorage(flagDataBaseDSN, flagFilePath)
+	// Загружаем из файла\БД все ранее сгенерированные ссылки
+	s.Load(storage)
+	defer s.Close(storage)
 
 	// описываем набор данных: метод запроса, ожидаемый код ответа, ожидаемое тело
 	testCases := []struct {

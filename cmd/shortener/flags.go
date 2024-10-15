@@ -59,5 +59,4 @@ func parseFlags() {
 	if cfg.EnvDataBaseDSN != "" {
 		flagDataBaseDSN = cfg.EnvDataBaseDSN
 	}
-
 }

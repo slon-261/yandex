@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"encoding/json"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -18,8 +17,7 @@ import (
 )
 
 // Хранилище ссылок
-var fs *s.FileStorage
-var db *sql.DB
+var storage *s.StorageType
 
 func postPage(w http.ResponseWriter, r *http.Request) {
 
@@ -32,7 +30,7 @@ func postPage(w http.ResponseWriter, r *http.Request) {
 	originalURL := strings.TrimSpace(string(body))
 
 	// Сохраняем короткую ссылку
-	shortURL := fs.CreateShortURL(originalURL)
+	shortURL := s.CreateShortURL(storage, originalURL)
 	response := flagBaseURL + "/" + shortURL
 
 	// Выводим новую ссылку на экран
@@ -57,7 +55,7 @@ func postJSONPage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Сохраняем короткую ссылку
-	shortURL := fs.CreateShortURL(req.URL)
+	shortURL := s.CreateShortURL(storage, req.URL)
 	var resp models.Response
 	resp.Result = flagBaseURL + "/" + shortURL
 
@@ -80,7 +78,7 @@ func getPage(w http.ResponseWriter, r *http.Request) {
 	shortURL := strings.Trim(string(r.RequestURI), " /")
 
 	// Ищем ссылку в хранилище
-	url, err := fs.GetURL(shortURL)
+	url, err := s.GetURL(storage, shortURL)
 	if err != nil {
 		http.Error(w, "Not found", http.StatusBadRequest)
 	} else {
@@ -90,7 +88,7 @@ func getPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func pingPage(w http.ResponseWriter, r *http.Request) {
-	err := db.Ping()
+	err := s.Ping(storage)
 
 	if err != nil {
 		http.Error(w, "Connect failed", http.StatusInternalServerError)
@@ -123,18 +121,12 @@ func main() {
 
 	// обрабатываем аргументы командной строки
 	parseFlags()
-	// Хранилище ссылок
-	fs = s.NewFileStorage(flagFilePath)
-	// Загружаем из файла все ранее сгенерированные ссылки
-	fs.Load()
-	defer fs.Close()
 
-	var err error
-	db, err = sql.Open("pgx", flagDataBaseDSN)
-	if err != nil {
-		panic(err)
-	}
-	defer db.Close()
+	storage = s.NewStorage(flagDataBaseDSN, flagFilePath)
+
+	// Загружаем из файла\БД все ранее сгенерированные ссылки
+	s.Load(storage)
+	defer s.Close(storage)
 
 	r := createRouter()
 

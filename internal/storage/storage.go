@@ -1,15 +1,9 @@
 package storage
 
 import (
-	"bufio"
 	"crypto/sha256"
 	"encoding/base64"
-	"encoding/json"
-	"errors"
-	"os"
-	"path/filepath"
 	"strings"
-	"sync"
 )
 
 // Информация о ссылке
@@ -21,98 +15,47 @@ type URL struct {
 
 type Storage interface {
 	Load() error
-	Save(data []byte) error
+	Save(shortURL string, newURL URL) (int, error)
 	CreateShortURL(originalURL string) string
+	GetURL(shortURL string) (string, error)
+	Ping() error
+	Close() error
 }
 
-// Массив URL + указатель на файл
-type FileStorage struct {
-	filename string
-	file     *os.File
-	scanner  *bufio.Scanner
-	urls     map[string]URL
-	mu       sync.Mutex
+type StorageType struct {
+	sType Storage
 }
 
-func NewFileStorage(filename string) *FileStorage {
-	return &FileStorage{filename: filename}
-}
-
-func (fs *FileStorage) Load() error {
-	var err error
-	// Пытаемся создать директорию
-	os.MkdirAll(filepath.Dir(fs.filename), 0666)
-	// Создаём файл
-	fs.file, err = os.OpenFile(fs.filename, os.O_RDWR|os.O_CREATE, 0666)
-
-	if err != nil {
-		return err
-	}
-	// создаём новый scanner
-	fs.scanner = bufio.NewScanner(fs.file)
-	fs.urls = map[string]URL{}
-	// перебираем все строки
-	for fs.scanner.Scan() {
-		// читаем данные из scanner
-		data := fs.scanner.Bytes()
-
-		url := URL{}
-		err := json.Unmarshal(data, &url)
-
-		fs.urls[url.ShortURL] = url
-
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (fs *FileStorage) Save(data []byte) (int, error) {
-	return fs.file.Write(data)
-}
-
-// Создаём короткую ссылку
-func (fs *FileStorage) CreateShortURL(originalURL string) string {
-	// Получаем хэш
-	shortURL := encryption(originalURL)
-	// Ищем ссылку в хранилище. Если не нашли - добавляем
-	_, err := fs.GetURL(shortURL)
-	if err != nil {
-		newURL := URL{
-			ShortURL:    shortURL,
-			OriginalURL: originalURL,
-			ID:          len(fs.urls) + 1,
-		}
-		// Добавляем данные в мапу
-		fs.urls[shortURL] = newURL
-
-		data, _ := json.Marshal(&newURL)
-		// добавляем перенос строки
-		data = append(data, '\n')
-
-		// Добавляем данные в файл
-		fs.file.Write(data)
-	}
-
-	// Возвращаем короткую ссылку
-	return shortURL
-}
-
-// Ищем ссылку в хранилище
-func (fs *FileStorage) GetURL(shortURL string) (string, error) {
-	fs.mu.Lock()
-	defer fs.mu.Unlock()
-	url, ok := fs.urls[shortURL]
-	if ok {
-		return url.OriginalURL, nil
+// При отсутствии переменной окружения DATABASE_DSN или флага командной строки -d или при их пустых значениях вернитесь последовательно к:
+// хранению сокращённых URL в файле при наличии соответствующей переменной окружения или флага командной строки;
+// хранению сокращённых URL в памяти.
+func NewStorage(flagDataBaseDSN string, flagFilePath string) *StorageType {
+	//Храним в БД
+	if flagDataBaseDSN != "" {
+		return &StorageType{NewDBStorage(flagDataBaseDSN)}
+		//Храним в файле
+	} else if flagFilePath != "" {
+		return &StorageType{NewFileStorage(flagFilePath)}
+		//Храним в памяти
 	} else {
-		return "", errors.New("NOT_FOUND")
+		return &StorageType{NewMemStorage()}
 	}
 }
 
-func (fs *FileStorage) Close() error {
-	return fs.file.Close()
+func Load(storage *StorageType) error {
+	return storage.sType.Load()
+}
+func CreateShortURL(storage *StorageType, shortURL string) string {
+	return storage.sType.CreateShortURL(shortURL)
+}
+func GetURL(storage *StorageType, shortURL string) (string, error) {
+	return storage.sType.GetURL(shortURL)
+}
+func Ping(storage *StorageType) error {
+	return storage.sType.Ping()
+}
+func Close(storage *StorageType) error {
+	return storage.sType.Close()
 }
 
 func encryption(str string) string {

@@ -92,9 +92,9 @@ func postBatchPage(w http.ResponseWriter, r *http.Request) {
 	for _, element := range req {
 		log.Print(element)
 		// Сохраняем короткую ссылку
-		shortURL := s.CreateShortURL(storage, element.URL, element.CorrelationId)
+		shortURL := s.CreateShortURL(storage, element.URL, element.CorrelationID)
 		respCurr.ShortURL = flagBaseURL + "/" + shortURL
-		respCurr.CorrelationId = element.CorrelationId
+		respCurr.CorrelationID = element.CorrelationID
 		resp = append(resp, respCurr)
 	}
 

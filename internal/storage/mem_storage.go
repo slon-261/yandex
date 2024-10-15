@@ -27,7 +27,7 @@ func (ms *MemStorage) Save(newURL URL) (int, error) {
 }
 
 // Создаём короткую ссылку
-func (ms *MemStorage) CreateShortURL(originalURL string, correlationId string) string {
+func (ms *MemStorage) CreateShortURL(originalURL string, correlationID string) string {
 	// Получаем хэш
 	shortURL := encryption(originalURL)
 	// Ищем ссылку в хранилище. Если не нашли - добавляем
@@ -36,7 +36,7 @@ func (ms *MemStorage) CreateShortURL(originalURL string, correlationId string) s
 		newURL := URL{
 			ShortURL:      shortURL,
 			OriginalURL:   originalURL,
-			CorrelationId: correlationId,
+			CorrelationID: correlationID,
 			ID:            len(ms.urls) + 1,
 		}
 

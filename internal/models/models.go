@@ -13,11 +13,11 @@ type Response struct {
 // Request описывает запрос пользователя
 type RequestBatch struct {
 	URL           string `json:"original_url"`
-	CorrelationId string `json:"correlation_id"`
+	CorrelationID string `json:"correlation_id"`
 }
 
 // Response описывает ответ сервера.
 type ResponseBatch struct {
 	ShortURL      string `json:"short_url"`
-	CorrelationId string `json:"correlation_id"`
+	CorrelationID string `json:"correlation_id"`
 }

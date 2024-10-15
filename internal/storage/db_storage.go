@@ -39,7 +39,7 @@ func (ds *DBStorage) Load() error {
 	// пробегаем по всем записям
 	for rows.Next() {
 		var url URL
-		err = rows.Scan(&url.ID, &url.CorrelationId, &url.ShortURL, &url.OriginalURL)
+		err = rows.Scan(&url.ID, &url.CorrelationID, &url.ShortURL, &url.OriginalURL)
 		if err != nil {
 			return err
 		}
@@ -63,7 +63,7 @@ func (ds *DBStorage) Save(newURL URL) (int, error) {
         (id, correlation_id, short_url, original_url)
         VALUES
         ($1, $2, $3, $4);
-		`, newURL.ID, newURL.CorrelationId, newURL.ShortURL, newURL.OriginalURL)
+		`, newURL.ID, newURL.CorrelationID, newURL.ShortURL, newURL.OriginalURL)
 	if err != nil {
 		log.Print(err)
 	}
@@ -71,7 +71,7 @@ func (ds *DBStorage) Save(newURL URL) (int, error) {
 }
 
 // Создаём короткую ссылку
-func (ds *DBStorage) CreateShortURL(originalURL string, correlationId string) string {
+func (ds *DBStorage) CreateShortURL(originalURL string, correlationID string) string {
 	// Получаем хэш
 	shortURL := encryption(originalURL)
 	// Ищем ссылку в хранилище. Если не нашли - добавляем
@@ -80,7 +80,7 @@ func (ds *DBStorage) CreateShortURL(originalURL string, correlationId string) st
 		newURL := URL{
 			ShortURL:      shortURL,
 			OriginalURL:   originalURL,
-			CorrelationId: correlationId,
+			CorrelationID: correlationID,
 			ID:            len(ds.urls) + 1,
 		}
 		// Добавляем данные в БД

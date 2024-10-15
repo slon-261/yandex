@@ -43,9 +43,9 @@ func postPage(w http.ResponseWriter, r *http.Request) {
 	} else {
 		status = http.StatusCreated
 	}
-	w.WriteHeader(status)
 	// Выводим новую ссылку на экран
 	w.Header().Set("content-type", "text/plain")
+	w.WriteHeader(status)
 	w.Write([]byte(response))
 }
 
@@ -81,9 +81,9 @@ func postJSONPage(w http.ResponseWriter, r *http.Request) {
 	} else {
 		status = http.StatusCreated
 	}
-	w.WriteHeader(status)
 	// Выводим новую ссылку на экран
 	w.Header().Set("content-type", "application/json")
+	w.WriteHeader(status)
 	w.Write(responseJSON)
 }
 

@@ -105,6 +105,7 @@ func (ds *DBStorage) CreateShortURL(originalURL string, correlationID string) (s
 func (ds *DBStorage) GetURL(shortURL string) (string, error) {
 	ds.mu.Lock()
 	defer ds.mu.Unlock()
+	log.Print(ds.urls)
 	url, ok := ds.urls[shortURL]
 	if ok {
 		return url.OriginalURL, nil

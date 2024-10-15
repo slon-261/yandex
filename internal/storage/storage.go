@@ -14,15 +14,17 @@ type URL struct {
 	OriginalURL   string `json:"original_url"`
 }
 
+// Интерфейс для хранилищ
 type Storage interface {
 	Load() error
 	Save(newURL URL) (int, error)
-	CreateShortURL(originalURL string, correlationID string) string
+	CreateShortURL(originalURL string, correlationID string) (string, error)
 	GetURL(shortURL string) (string, error)
 	Ping() error
 	Close() error
 }
 
+// Структура, которая содержит один из 3 типов хранилища (Mem, File, DB)
 type StorageType struct {
 	sType Storage
 }
@@ -43,10 +45,11 @@ func NewStorage(flagDataBaseDSN string, flagFilePath string) *StorageType {
 	}
 }
 
+// Реализация методов для интерфейса
 func Load(storage *StorageType) error {
 	return storage.sType.Load()
 }
-func CreateShortURL(storage *StorageType, shortURL string, correlationID string) string {
+func CreateShortURL(storage *StorageType, shortURL string, correlationID string) (string, error) {
 	return storage.sType.CreateShortURL(shortURL, correlationID)
 }
 func GetURL(storage *StorageType, shortURL string) (string, error) {

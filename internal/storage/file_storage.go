@@ -18,6 +18,7 @@ type FileStorage struct {
 	mu       sync.Mutex
 }
 
+// Создаём новое хранилище, открываем файл
 func NewFileStorage(filename string) *FileStorage {
 	// Пытаемся создать директорию
 	os.MkdirAll(filepath.Dir(filename), 0666)
@@ -29,6 +30,7 @@ func NewFileStorage(filename string) *FileStorage {
 	return &FileStorage{filename: filename, file: file}
 }
 
+// Создаём мапу с ссылками и подгружаем туда данные из файла
 func (fs *FileStorage) Load() error {
 	fs.urls = map[string]URL{}
 	// создаём новый scanner
@@ -50,6 +52,7 @@ func (fs *FileStorage) Load() error {
 	return nil
 }
 
+// Сохраняем данные в мапе и в файле
 func (fs *FileStorage) Save(newURL URL) (int, error) {
 	// Добавляем данные в мапу
 	fs.urls[newURL.ShortURL] = newURL
@@ -62,9 +65,11 @@ func (fs *FileStorage) Save(newURL URL) (int, error) {
 }
 
 // Создаём короткую ссылку
-func (fs *FileStorage) CreateShortURL(originalURL string, correlationID string) string {
+func (fs *FileStorage) CreateShortURL(originalURL string, correlationID string) (string, error) {
 	// Получаем хэш
 	shortURL := encryption(originalURL)
+	//Возвращаемая ошибка
+	var errReturn error
 	// Ищем ссылку в хранилище. Если не нашли - добавляем
 	_, err := fs.GetURL(shortURL)
 	if err != nil {
@@ -77,10 +82,14 @@ func (fs *FileStorage) CreateShortURL(originalURL string, correlationID string) 
 
 		// Добавляем данные в файл
 		fs.Save(newURL)
+		errReturn = nil
+	} else {
+		//Если ссылка уже создана ранее - возвращаем ошибку
+		errReturn = errors.New("SHORT_URL_EXIST")
 	}
 
 	// Возвращаем короткую ссылку
-	return shortURL
+	return shortURL, errReturn
 }
 
 // Ищем ссылку в хранилище
@@ -95,6 +104,7 @@ func (fs *FileStorage) GetURL(shortURL string) (string, error) {
 	}
 }
 
+// Пинг БД, не поддерживается
 func (fs *FileStorage) Ping() error {
 	return errors.New("NOT_SUPPORTED")
 }

@@ -29,6 +29,7 @@ func TestPostPage(t *testing.T) {
 	}{
 		{method: http.MethodPost, body: "https://practicum.yandex.ru/", expectedCode: http.StatusCreated, expectedBody: "http://localhost:8080/QrPnX5IUXS"},
 		{method: http.MethodPost, body: "https://practicum.yandex.ru/test", expectedCode: http.StatusCreated, expectedBody: "http://localhost:8080/50K3Dd+Erq"},
+		{method: http.MethodPost, body: "https://practicum.yandex.ru/test", expectedCode: http.StatusConflict, expectedBody: "http://localhost:8080/50K3Dd+Erq\n"},
 		{method: http.MethodPost, body: "https://e1.ru/", expectedCode: http.StatusCreated, expectedBody: "http://localhost:8080/QpZyjSjq5e"},
 	}
 
@@ -60,8 +61,9 @@ func TestPostJsonPage(t *testing.T) {
 		expectedBody string
 	}{
 		{method: http.MethodPost, body: "{\"url\":\"https://practicum.yandex.ru/JSON\"}", expectedCode: http.StatusCreated, expectedBody: "{\n   \"result\": \"http://localhost:8080/3ABEBnUYiI\"\n}"},
-		{method: http.MethodPost, body: "{\"url\":\"https://practicum.yandex.ru/test\"}", expectedCode: http.StatusCreated, expectedBody: "{\n   \"result\": \"http://localhost:8080/50K3Dd+Erq\"\n}"},
-		{method: http.MethodPost, body: "{\"url\":\"https://e1.ru/\"}", expectedCode: http.StatusCreated, expectedBody: "{\n   \"result\": \"http://localhost:8080/QpZyjSjq5e\"\n}"},
+		{method: http.MethodPost, body: "{\"url\":\"https://practicum.yandex.ru/JSON\"}", expectedCode: http.StatusConflict, expectedBody: "{\n   \"result\": \"http://localhost:8080/3ABEBnUYiI\"\n}\n"},
+		{method: http.MethodPost, body: "{\"url\":\"https://practicum.yandex.ru/testJSON\"}", expectedCode: http.StatusCreated, expectedBody: "{\n   \"result\": \"http://localhost:8080/qNk2xxBG+2\"\n}"},
+		{method: http.MethodPost, body: "{\"url\":\"https://e1.ru/\"}", expectedCode: http.StatusConflict, expectedBody: "{\n   \"result\": \"http://localhost:8080/QpZyjSjq5e\"\n}\n"},
 	}
 
 	for _, tc := range testCases {

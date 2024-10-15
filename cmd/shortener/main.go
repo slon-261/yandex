@@ -30,8 +30,14 @@ func postPage(w http.ResponseWriter, r *http.Request) {
 	originalURL := strings.TrimSpace(string(body))
 
 	// Сохраняем короткую ссылку
-	shortURL := s.CreateShortURL(storage, originalURL, "")
+	shortURL, errCreate := s.CreateShortURL(storage, originalURL, "")
 	response := flagBaseURL + "/" + shortURL
+
+	//Если при создании ссылки была ошибка - возвращаем код 409, но в теле указыаем ссылку
+	if errCreate != nil {
+		http.Error(w, response, http.StatusConflict)
+		return
+	}
 
 	// Выводим новую ссылку на экран
 	w.Header().Set("content-type", "text/plain")
@@ -55,13 +61,18 @@ func postJSONPage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Сохраняем короткую ссылку
-	shortURL := s.CreateShortURL(storage, req.URL, "")
+	shortURL, errCreate := s.CreateShortURL(storage, req.URL, "")
 	var resp models.Response
 	resp.Result = flagBaseURL + "/" + shortURL
-
 	responseJSON, err := json.MarshalIndent(resp, "", "   ")
 	if err != nil {
 		http.Error(w, "JSON error", http.StatusInternalServerError)
+		return
+	}
+
+	//Если при создании ссылки была ошибка - возвращаем код 409, но в теле указыаем ссылку
+	if errCreate != nil {
+		http.Error(w, string(responseJSON), http.StatusConflict)
 		return
 	}
 
@@ -90,9 +101,8 @@ func postBatchPage(w http.ResponseWriter, r *http.Request) {
 	var resp []models.ResponseBatch
 	var respCurr models.ResponseBatch
 	for _, element := range req {
-		log.Print(element)
 		// Сохраняем короткую ссылку
-		shortURL := s.CreateShortURL(storage, element.URL, element.CorrelationID)
+		shortURL, _ := s.CreateShortURL(storage, element.URL, element.CorrelationID)
 		respCurr.ShortURL = flagBaseURL + "/" + shortURL
 		respCurr.CorrelationID = element.CorrelationID
 		resp = append(resp, respCurr)

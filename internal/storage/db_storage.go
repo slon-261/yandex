@@ -15,6 +15,7 @@ type DBStorage struct {
 	mu   sync.Mutex
 }
 
+// Создаём новое хранилище, подключаемся к БД и создаём таблицу
 func NewDBStorage(DSN string) *DBStorage {
 	db, err := sql.Open("pgx", DSN)
 	if err != nil {
@@ -27,8 +28,10 @@ func NewDBStorage(DSN string) *DBStorage {
 	return &DBStorage{DSN: DSN, db: db}
 }
 
+// Создаём мапу с ссылками и подгружаем туда данные из БД
 func (ds *DBStorage) Load() error {
 	ds.urls = map[string]URL{}
+
 	rows, err := ds.db.Query("SELECT id, correlation_id, short_url, original_url from urls")
 	if err != nil {
 		return err
@@ -54,6 +57,7 @@ func (ds *DBStorage) Load() error {
 	return nil
 }
 
+// Сохраняем данные в мапе и БД
 func (ds *DBStorage) Save(newURL URL) (int, error) {
 	// Добавляем данные в мапу
 	ds.urls[newURL.ShortURL] = newURL
@@ -71,9 +75,11 @@ func (ds *DBStorage) Save(newURL URL) (int, error) {
 }
 
 // Создаём короткую ссылку
-func (ds *DBStorage) CreateShortURL(originalURL string, correlationID string) string {
+func (ds *DBStorage) CreateShortURL(originalURL string, correlationID string) (string, error) {
 	// Получаем хэш
 	shortURL := encryption(originalURL)
+	//Возвращаемая ошибка
+	var errReturn error
 	// Ищем ссылку в хранилище. Если не нашли - добавляем
 	_, err := ds.GetURL(shortURL)
 	if err != nil {
@@ -85,10 +91,14 @@ func (ds *DBStorage) CreateShortURL(originalURL string, correlationID string) st
 		}
 		// Добавляем данные в БД
 		ds.Save(newURL)
+
+		errReturn = nil
+	} else {
+		errReturn = errors.New("SHORT_URL_EXIST")
 	}
 
 	// Возвращаем короткую ссылку
-	return shortURL
+	return shortURL, errReturn
 }
 
 // Ищем ссылку в хранилище
@@ -103,6 +113,7 @@ func (ds *DBStorage) GetURL(shortURL string) (string, error) {
 	}
 }
 
+// Пинг БД
 func (ds *DBStorage) Ping() error {
 	return ds.db.Ping()
 }

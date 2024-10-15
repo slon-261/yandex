@@ -129,7 +129,8 @@ func main() {
 	fs.Load()
 	defer fs.Close()
 
-	db, err := sql.Open("pgx", flagDataBaseDSN)
+	var err error
+	db, err = sql.Open("pgx", flagDataBaseDSN)
 	if err != nil {
 		panic(err)
 	}
@@ -139,7 +140,7 @@ func main() {
 
 	log.Print("Running server on ", flagRunAddr)
 	log.Print("File storage is ", flagFilePath)
-	log.Print("DB connected at ", flagFilePath)
+	log.Print("DB connected at ", flagDataBaseDSN)
 
 	// r передаётся как http.Handler
 	http.ListenAndServe(flagRunAddr, r)

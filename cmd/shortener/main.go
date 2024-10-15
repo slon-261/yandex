@@ -35,7 +35,8 @@ func postPage(w http.ResponseWriter, r *http.Request) {
 
 	//Если при создании ссылки была ошибка - возвращаем код 409, но в теле указыаем ссылку
 	if errCreate != nil {
-		http.Error(w, response, http.StatusConflict)
+		w.WriteHeader(http.StatusConflict)
+		w.Write([]byte(response))
 		return
 	}
 
@@ -72,7 +73,8 @@ func postJSONPage(w http.ResponseWriter, r *http.Request) {
 
 	//Если при создании ссылки была ошибка - возвращаем код 409, но в теле указыаем ссылку
 	if errCreate != nil {
-		http.Error(w, string(responseJSON), http.StatusConflict)
+		w.WriteHeader(http.StatusConflict)
+		w.Write(responseJSON)
 		return
 	}
 

@@ -82,6 +82,37 @@ func TestPostJsonPage(t *testing.T) {
 	}
 }
 
+func TestPostBatchPage(t *testing.T) {
+
+	// описываем набор данных: метод запроса, ожидаемый код ответа, ожидаемое тело
+	testCases := []struct {
+		method       string
+		body         string
+		expectedCode int
+		expectedBody string
+	}{
+		{method: http.MethodPost, body: "[{\"correlation_id\": \"qqq\",\"original_url\": \"http://du2mkj9ffffffffffff\"},{\"correlation_id\": \"www\",\"original_url\": \"http://e1.ru\"}]", expectedCode: http.StatusCreated, expectedBody: "[\n   {\n      \"short_url\": \"http://localhost:8080/D3pOAbtqFc\",\n      \"correlation_id\": \"qqq\"\n   },\n   {\n      \"short_url\": \"http://localhost:8080/FYyo4hlW2g\",\n      \"correlation_id\": \"www\"\n   }\n]"},
+		{method: http.MethodPost, body: "[{\"correlggggggggation_id\": \"qqq\",\"original_url\": \"http://du2mkj9ffffffffffff\"}}]", expectedCode: http.StatusBadRequest, expectedBody: "JSON error\n"},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.method, func(t *testing.T) {
+			r := httptest.NewRequest(tc.method, "/api/shorten/batch", strings.NewReader(tc.body))
+			w := httptest.NewRecorder()
+
+			// вызовем хендлер как обычную функцию, без запуска самого сервера
+			postBatchPage(w, r)
+
+			assert.Equal(t, tc.expectedCode, w.Code, "Код ответа не совпадает с ожидаемым")
+			// проверим корректность полученного тела ответа, если мы его ожидаем
+			if tc.expectedBody != "" {
+				// assert.JSONEq помогает сравнить две JSON-строки
+				assert.Equal(t, tc.expectedBody, w.Body.String(), "Тело ответа не совпадает с ожидаемым")
+			}
+		})
+	}
+}
+
 func TestGetPage(t *testing.T) {
 
 	// описываем набор данных: метод запроса, ожидаемый код ответа, ожидаемое тело

@@ -20,27 +20,28 @@ func (ms *MemStorage) Load() error {
 	return nil
 }
 
-func (ms *MemStorage) Save(shortURL string, newURL URL) (int, error) {
+func (ms *MemStorage) Save(newURL URL) (int, error) {
 	// Добавляем данные в мапу
-	ms.urls[shortURL] = newURL
+	ms.urls[newURL.ShortURL] = newURL
 	return 0, nil
 }
 
 // Создаём короткую ссылку
-func (ms *MemStorage) CreateShortURL(originalURL string) string {
+func (ms *MemStorage) CreateShortURL(originalURL string, correlationId string) string {
 	// Получаем хэш
 	shortURL := encryption(originalURL)
 	// Ищем ссылку в хранилище. Если не нашли - добавляем
 	_, err := ms.GetURL(shortURL)
 	if err != nil {
 		newURL := URL{
-			ShortURL:    shortURL,
-			OriginalURL: originalURL,
-			ID:          len(ms.urls) + 1,
+			ShortURL:      shortURL,
+			OriginalURL:   originalURL,
+			CorrelationId: correlationId,
+			ID:            len(ms.urls) + 1,
 		}
 
 		// Добавляем данные в мапу
-		ms.Save(shortURL, newURL)
+		ms.Save(newURL)
 	}
 
 	// Возвращаем короткую ссылку

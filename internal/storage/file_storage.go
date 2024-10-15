@@ -50,9 +50,9 @@ func (fs *FileStorage) Load() error {
 	return nil
 }
 
-func (fs *FileStorage) Save(shortURL string, newURL URL) (int, error) {
+func (fs *FileStorage) Save(newURL URL) (int, error) {
 	// Добавляем данные в мапу
-	fs.urls[shortURL] = newURL
+	fs.urls[newURL.ShortURL] = newURL
 
 	data, _ := json.Marshal(&newURL)
 	// добавляем перенос строки
@@ -62,20 +62,21 @@ func (fs *FileStorage) Save(shortURL string, newURL URL) (int, error) {
 }
 
 // Создаём короткую ссылку
-func (fs *FileStorage) CreateShortURL(originalURL string) string {
+func (fs *FileStorage) CreateShortURL(originalURL string, correlationId string) string {
 	// Получаем хэш
 	shortURL := encryption(originalURL)
 	// Ищем ссылку в хранилище. Если не нашли - добавляем
 	_, err := fs.GetURL(shortURL)
 	if err != nil {
 		newURL := URL{
-			ShortURL:    shortURL,
-			OriginalURL: originalURL,
-			ID:          len(fs.urls) + 1,
+			ShortURL:      shortURL,
+			OriginalURL:   originalURL,
+			CorrelationId: correlationId,
+			ID:            len(fs.urls) + 1,
 		}
 
 		// Добавляем данные в файл
-		fs.Save(shortURL, newURL)
+		fs.Save(newURL)
 	}
 
 	// Возвращаем короткую ссылку

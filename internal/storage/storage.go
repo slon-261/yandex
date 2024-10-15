@@ -8,15 +8,16 @@ import (
 
 // Информация о ссылке
 type URL struct {
-	ID          int    `json:"id"`
-	ShortURL    string `json:"short_url"`
-	OriginalURL string `json:"original_url"`
+	ID            int    `json:"id"`
+	CorrelationId string `json:"correlation_id"`
+	ShortURL      string `json:"short_url"`
+	OriginalURL   string `json:"original_url"`
 }
 
 type Storage interface {
 	Load() error
-	Save(shortURL string, newURL URL) (int, error)
-	CreateShortURL(originalURL string) string
+	Save(newURL URL) (int, error)
+	CreateShortURL(originalURL string, correlationId string) string
 	GetURL(shortURL string) (string, error)
 	Ping() error
 	Close() error
@@ -45,8 +46,8 @@ func NewStorage(flagDataBaseDSN string, flagFilePath string) *StorageType {
 func Load(storage *StorageType) error {
 	return storage.sType.Load()
 }
-func CreateShortURL(storage *StorageType, shortURL string) string {
-	return storage.sType.CreateShortURL(shortURL)
+func CreateShortURL(storage *StorageType, shortURL string, correlationId string) string {
+	return storage.sType.CreateShortURL(shortURL, correlationId)
 }
 func GetURL(storage *StorageType, shortURL string) (string, error) {
 	return storage.sType.GetURL(shortURL)

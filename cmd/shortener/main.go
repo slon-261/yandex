@@ -30,7 +30,7 @@ func postPage(w http.ResponseWriter, r *http.Request) {
 	originalURL := strings.TrimSpace(string(body))
 
 	// Сохраняем короткую ссылку
-	shortURL := s.CreateShortURL(storage, originalURL)
+	shortURL := s.CreateShortURL(storage, originalURL, "")
 	response := flagBaseURL + "/" + shortURL
 
 	// Выводим новую ссылку на экран
@@ -55,9 +55,48 @@ func postJSONPage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Сохраняем короткую ссылку
-	shortURL := s.CreateShortURL(storage, req.URL)
+	shortURL := s.CreateShortURL(storage, req.URL, "")
 	var resp models.Response
 	resp.Result = flagBaseURL + "/" + shortURL
+
+	responseJSON, err := json.MarshalIndent(resp, "", "   ")
+	if err != nil {
+		http.Error(w, "JSON error", http.StatusInternalServerError)
+		return
+	}
+
+	// Выводим новую ссылку на экран
+	w.Header().Set("content-type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	w.Write(responseJSON)
+}
+
+func postBatchPage(w http.ResponseWriter, r *http.Request) {
+
+	// Получаем ссылку из body
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Body error", http.StatusBadRequest)
+		return
+	}
+
+	var req []models.RequestBatch
+	if err = json.Unmarshal([]byte(body), &req); err != nil {
+		log.Print(err)
+		http.Error(w, "JSON error", http.StatusBadRequest)
+		return
+	}
+
+	var resp []models.ResponseBatch
+	var respCurr models.ResponseBatch
+	for _, element := range req {
+		log.Print(element)
+		// Сохраняем короткую ссылку
+		shortURL := s.CreateShortURL(storage, element.URL, element.CorrelationId)
+		respCurr.ShortURL = flagBaseURL + "/" + shortURL
+		respCurr.CorrelationId = element.CorrelationId
+		resp = append(resp, respCurr)
+	}
 
 	responseJSON, err := json.MarshalIndent(resp, "", "   ")
 	if err != nil {
@@ -107,6 +146,7 @@ func createRouter() *chi.Mux {
 	r.Use(d.Decompress)            // Распаковка сжатого запроса
 	r.Post("/", postPage)
 	r.Post("/api/shorten", postJSONPage)
+	r.Post("/api/shorten/batch", postBatchPage)
 	r.Get("/ping", pingPage)
 	r.Get("/{url}", getPage)
 	return r

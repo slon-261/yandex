@@ -20,7 +20,7 @@ func NewDBStorage(DSN string) *DBStorage {
 	if err != nil {
 		panic(err)
 	}
-	_, err = db.Exec("CREATE TABLE IF NOT EXISTS urls (uuid integer, short_url varchar, original_url varchar);")
+	_, err = db.Exec("CREATE TABLE IF NOT EXISTS urls (id integer, correlation_id varchar, short_url varchar, original_url varchar);")
 	if err != nil {
 		log.Print(err)
 	}
@@ -29,7 +29,7 @@ func NewDBStorage(DSN string) *DBStorage {
 
 func (ds *DBStorage) Load() error {
 	ds.urls = map[string]URL{}
-	rows, err := ds.db.Query("SELECT uuid, short_url, original_url from urls")
+	rows, err := ds.db.Query("SELECT id, correlation_id, short_url, original_url from urls")
 	if err != nil {
 		return err
 	}
@@ -39,7 +39,7 @@ func (ds *DBStorage) Load() error {
 	// пробегаем по всем записям
 	for rows.Next() {
 		var url URL
-		err = rows.Scan(&url.ID, &url.ShortURL, &url.OriginalURL)
+		err = rows.Scan(&url.ID, &url.CorrelationId, &url.ShortURL, &url.OriginalURL)
 		if err != nil {
 			return err
 		}
@@ -54,16 +54,16 @@ func (ds *DBStorage) Load() error {
 	return nil
 }
 
-func (ds *DBStorage) Save(shortURL string, newURL URL) (int, error) {
+func (ds *DBStorage) Save(newURL URL) (int, error) {
 	// Добавляем данные в мапу
-	ds.urls[shortURL] = newURL
+	ds.urls[newURL.ShortURL] = newURL
 
 	_, err := ds.db.Exec(`
         INSERT INTO urls
-        (uuid, short_url, original_url)
+        (id, correlation_id, short_url, original_url)
         VALUES
-        ($1, $2, $3);
-		`, newURL.ID, newURL.ShortURL, newURL.OriginalURL)
+        ($1, $2, $3, $4);
+		`, newURL.ID, newURL.CorrelationId, newURL.ShortURL, newURL.OriginalURL)
 	if err != nil {
 		log.Print(err)
 	}
@@ -71,19 +71,20 @@ func (ds *DBStorage) Save(shortURL string, newURL URL) (int, error) {
 }
 
 // Создаём короткую ссылку
-func (ds *DBStorage) CreateShortURL(originalURL string) string {
+func (ds *DBStorage) CreateShortURL(originalURL string, correlationId string) string {
 	// Получаем хэш
 	shortURL := encryption(originalURL)
 	// Ищем ссылку в хранилище. Если не нашли - добавляем
 	_, err := ds.GetURL(shortURL)
 	if err != nil {
 		newURL := URL{
-			ShortURL:    shortURL,
-			OriginalURL: originalURL,
-			ID:          len(ds.urls) + 1,
+			ShortURL:      shortURL,
+			OriginalURL:   originalURL,
+			CorrelationId: correlationId,
+			ID:            len(ds.urls) + 1,
 		}
 		// Добавляем данные в БД
-		ds.Save(shortURL, newURL)
+		ds.Save(newURL)
 	}
 
 	// Возвращаем короткую ссылку

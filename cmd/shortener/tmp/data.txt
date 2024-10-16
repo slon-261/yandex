@@ -1,0 +1,4 @@
+{"id":1,"short_url":"QrPnX5IUXS","original_url":"https://practicum.yandex.ru/"}
+{"id":2,"short_url":"50K3Dd+Erq","original_url":"https://practicum.yandex.ru/test"}
+{"id":3,"short_url":"QpZyjSjq5e","original_url":"https://e1.ru/"}
+{"id":4,"short_url":"3ABEBnUYiI","original_url":"https://practicum.yandex.ru/JSON"}

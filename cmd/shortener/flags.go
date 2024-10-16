@@ -14,6 +14,9 @@ var flagBaseURL string
 // Путь до файла с короткими ссылками
 var flagFilePath string
 
+// Строка подключения к БД
+var flagDataBaseDSN string
+
 // parseFlags обрабатывает аргументы командной строки
 // и сохраняет их значения в соответствующих переменных
 func parseFlags() {
@@ -30,7 +33,11 @@ func parseFlags() {
 
 	// регистрируем переменную flagFilePath
 	// как аргумент -f со значением data.txt по умолчанию
-	flag.StringVar(&flagFilePath, "f", cfg.DefaultFilePath, "address and port for base link")
+	flag.StringVar(&flagFilePath, "f", cfg.DefaultFilePath, "path for file storage")
+
+	// регистрируем переменную DataBaseDSN
+	// как аргумент -d со значением DefaulDataBaseDSN по умолчанию
+	flag.StringVar(&flagDataBaseDSN, "d", cfg.DefaultDataBaseDSN, "data base DSN")
 
 	// парсим переданные серверу аргументы в зарегистрированные переменные
 	flag.Parse()
@@ -49,5 +56,7 @@ func parseFlags() {
 	if cfg.EnvFilePath != "" {
 		flagFilePath = cfg.EnvFilePath
 	}
-
+	if cfg.EnvDataBaseDSN != "" {
+		flagDataBaseDSN = cfg.EnvDataBaseDSN
+	}
 }

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"go.uber.org/zap"
 	"io"
 	"log"
@@ -16,7 +17,7 @@ import (
 )
 
 // Хранилище ссылок
-var fs *s.FileStorage
+var storage *s.StorageType
 
 func postPage(w http.ResponseWriter, r *http.Request) {
 
@@ -29,12 +30,20 @@ func postPage(w http.ResponseWriter, r *http.Request) {
 	originalURL := strings.TrimSpace(string(body))
 
 	// Сохраняем короткую ссылку
-	shortURL := fs.CreateShortURL(originalURL)
+	shortURL, errCreate := s.CreateShortURL(storage, originalURL, "")
+	//Если при создании ссылки была ошибка - возвращаем код 409, но в теле указыаем ссылку
+	var status int
+	if errCreate != nil {
+		status = http.StatusConflict
+	} else {
+		status = http.StatusCreated
+	}
+
 	response := flagBaseURL + "/" + shortURL
 
 	// Выводим новую ссылку на экран
 	w.Header().Set("content-type", "text/plain")
-	w.WriteHeader(http.StatusCreated)
+	w.WriteHeader(status)
 	w.Write([]byte(response))
 }
 
@@ -54,9 +63,54 @@ func postJSONPage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Сохраняем короткую ссылку
-	shortURL := fs.CreateShortURL(req.URL)
+	shortURL, errCreate := s.CreateShortURL(storage, req.URL, "")
+	//Если при создании ссылки была ошибка - возвращаем код 409, но в теле указыаем ссылку
+	var status int
+	if errCreate != nil {
+		status = http.StatusConflict
+	} else {
+		status = http.StatusCreated
+	}
+
 	var resp models.Response
 	resp.Result = flagBaseURL + "/" + shortURL
+	responseJSON, err := json.MarshalIndent(resp, "", "   ")
+	if err != nil {
+		http.Error(w, "JSON error", http.StatusInternalServerError)
+		return
+	}
+
+	// Выводим новую ссылку на экран
+	w.Header().Set("content-type", "application/json")
+	w.WriteHeader(status)
+	w.Write(responseJSON)
+}
+
+func postBatchPage(w http.ResponseWriter, r *http.Request) {
+
+	// Получаем ссылку из body
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Body error", http.StatusBadRequest)
+		return
+	}
+
+	var req []models.RequestBatch
+	if err = json.Unmarshal([]byte(body), &req); err != nil {
+		log.Print(err)
+		http.Error(w, "JSON error", http.StatusBadRequest)
+		return
+	}
+
+	var resp []models.ResponseBatch
+	var respCurr models.ResponseBatch
+	for _, element := range req {
+		// Сохраняем короткую ссылку
+		shortURL, _ := s.CreateShortURL(storage, element.URL, element.CorrelationID)
+		respCurr.ShortURL = flagBaseURL + "/" + shortURL
+		respCurr.CorrelationID = element.CorrelationID
+		resp = append(resp, respCurr)
+	}
 
 	responseJSON, err := json.MarshalIndent(resp, "", "   ")
 	if err != nil {
@@ -77,12 +131,22 @@ func getPage(w http.ResponseWriter, r *http.Request) {
 	shortURL := strings.Trim(string(r.RequestURI), " /")
 
 	// Ищем ссылку в хранилище
-	url, err := fs.GetURL(shortURL)
+	url, err := s.GetURL(storage, shortURL)
 	if err != nil {
 		http.Error(w, "Not found", http.StatusBadRequest)
 	} else {
 		w.Header().Set("Location", url)
 		w.WriteHeader(http.StatusTemporaryRedirect)
+	}
+}
+
+func pingPage(w http.ResponseWriter, r *http.Request) {
+	err := s.Ping(storage)
+
+	if err != nil {
+		http.Error(w, "Connect failed", http.StatusInternalServerError)
+	} else {
+		w.WriteHeader(http.StatusOK)
 	}
 }
 
@@ -96,6 +160,8 @@ func createRouter() *chi.Mux {
 	r.Use(d.Decompress)            // Распаковка сжатого запроса
 	r.Post("/", postPage)
 	r.Post("/api/shorten", postJSONPage)
+	r.Post("/api/shorten/batch", postBatchPage)
+	r.Get("/ping", pingPage)
 	r.Get("/{url}", getPage)
 	return r
 }
@@ -109,16 +175,18 @@ func main() {
 
 	// обрабатываем аргументы командной строки
 	parseFlags()
-	// Хранилище ссылок
-	fs = s.NewFileStorage(flagFilePath)
-	// Загружаем из файла все ранее сгенерированные ссылки
-	fs.Load()
-	defer fs.Close()
+
+	storage = s.NewStorage(flagDataBaseDSN, flagFilePath)
+
+	// Загружаем из файла\БД все ранее сгенерированные ссылки
+	s.Load(storage)
+	defer s.Close(storage)
 
 	r := createRouter()
 
 	log.Print("Running server on ", flagRunAddr)
 	log.Print("File storage is ", flagFilePath)
+	log.Print("DB connected at ", flagDataBaseDSN)
 
 	// r передаётся как http.Handler
 	http.ListenAndServe(flagRunAddr, r)

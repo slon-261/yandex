@@ -3,8 +3,13 @@ package storage
 import (
 	"crypto/sha256"
 	"encoding/base64"
+	"errors"
 	"strings"
 )
+
+var ErrNotFound = errors.New("NOT_FOUND")
+var ErrShortURLExist = errors.New("SHORT_URL_EXIST")
+var ErrNotSupported = errors.New("NOT_SUPPORTED")
 
 // Информация о ссылке
 type URL struct {

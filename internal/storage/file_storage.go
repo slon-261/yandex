@@ -3,7 +3,6 @@ package storage
 import (
 	"bufio"
 	"encoding/json"
-	"errors"
 	"os"
 	"path/filepath"
 	"sync"
@@ -89,7 +88,7 @@ func (fs *FileStorage) CreateShortURL(originalURL string, correlationID string, 
 		errReturn = nil
 	} else {
 		//Если ссылка уже создана ранее - возвращаем ошибку
-		errReturn = errors.New("SHORT_URL_EXIST")
+		errReturn = ErrShortURLExist
 	}
 
 	// Возвращаем короткую ссылку
@@ -104,7 +103,7 @@ func (fs *FileStorage) GetURL(shortURL string) (string, error) {
 	if ok {
 		return url.OriginalURL, nil
 	} else {
-		return "", errors.New("NOT_FOUND")
+		return "", ErrNotFound
 	}
 }
 
@@ -123,13 +122,13 @@ func (fs *FileStorage) GetUserURLs(userID string) ([]URL, error) {
 	if len(resp) > 0 {
 		return resp, nil
 	} else {
-		return nil, errors.New("NOT_FOUND")
+		return nil, ErrNotFound
 	}
 }
 
 // Пинг БД, не поддерживается
 func (fs *FileStorage) Ping() error {
-	return errors.New("NOT_SUPPORTED")
+	return ErrNotSupported
 }
 
 func (fs *FileStorage) Close() error {

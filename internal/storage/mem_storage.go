@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"errors"
 	"sync"
 )
 
@@ -50,7 +49,7 @@ func (ms *MemStorage) CreateShortURL(originalURL string, correlationID string, u
 		ms.Save(newURL)
 	} else {
 		//Если ссылка уже создана ранее - возвращаем ошибку
-		errReturn = errors.New("SHORT_URL_EXIST")
+		errReturn = ErrShortURLExist
 	}
 
 	// Возвращаем короткую ссылку
@@ -65,7 +64,7 @@ func (ms *MemStorage) GetURL(shortURL string) (string, error) {
 	if ok {
 		return url.OriginalURL, nil
 	} else {
-		return "", errors.New("NOT_FOUND")
+		return "", ErrNotFound
 	}
 }
 
@@ -84,13 +83,13 @@ func (ms *MemStorage) GetUserURLs(userID string) ([]URL, error) {
 	if len(resp) > 0 {
 		return resp, nil
 	} else {
-		return nil, errors.New("NOT_FOUND")
+		return nil, ErrNotFound
 	}
 }
 
 // Пинг БД, не поддерживается
 func (ms *MemStorage) Ping() error {
-	return errors.New("NOT_SUPPORTED")
+	return ErrNotSupported
 }
 
 func (ms *MemStorage) Close() error {

@@ -2,7 +2,6 @@ package storage
 
 import (
 	"database/sql"
-	"errors"
 	"log"
 	"sync"
 )
@@ -66,7 +65,7 @@ func (ds *DBStorage) CreateShortURL(originalURL string, correlationID string, us
 
 		errReturn = nil
 	} else {
-		errReturn = errors.New("SHORT_URL_EXIST")
+		errReturn = ErrShortURLExist
 	}
 
 	// Возвращаем короткую ссылку
@@ -121,7 +120,7 @@ func (ds *DBStorage) GetUserURLs(userID string) ([]URL, error) {
 	if len(resp) > 0 {
 		return resp, nil
 	} else {
-		return nil, errors.New("NOT_FOUND")
+		return nil, ErrNotFound
 	}
 }
 

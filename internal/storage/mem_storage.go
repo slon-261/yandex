@@ -30,7 +30,7 @@ func (ms *MemStorage) Save(newURL URL) (int, error) {
 }
 
 // Создаём короткую ссылку
-func (ms *MemStorage) CreateShortURL(originalURL string, correlationID string) (string, error) {
+func (ms *MemStorage) CreateShortURL(originalURL string, correlationID string, userID string) (string, error) {
 	// Получаем хэш
 	shortURL := Encryption(originalURL)
 	//Возвращаемая ошибка
@@ -42,6 +42,7 @@ func (ms *MemStorage) CreateShortURL(originalURL string, correlationID string) (
 			ShortURL:      shortURL,
 			OriginalURL:   originalURL,
 			CorrelationID: correlationID,
+			UserID:        userID,
 			ID:            len(ms.urls) + 1,
 		}
 
@@ -65,6 +66,25 @@ func (ms *MemStorage) GetURL(shortURL string) (string, error) {
 		return url.OriginalURL, nil
 	} else {
 		return "", errors.New("NOT_FOUND")
+	}
+}
+
+// Получаем все ссылки текущего пользователя
+func (ms *MemStorage) GetUserURLs(userID string) ([]URL, error) {
+	ms.mu.Lock()
+	defer ms.mu.Unlock()
+
+	var resp []URL
+	// Перебираем всю мапу, берем только нужные объекты
+	for _, element := range ms.urls {
+		if element.UserID == userID {
+			resp = append(resp, element)
+		}
+	}
+	if len(resp) > 0 {
+		return resp, nil
+	} else {
+		return nil, errors.New("NOT_FOUND")
 	}
 }
 

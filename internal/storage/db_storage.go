@@ -20,9 +20,9 @@ func NewDBStorage(DSN string) *DBStorage {
 	if err != nil {
 		panic(err)
 	}
-	_, err = db.Exec("CREATE TABLE IF NOT EXISTS urls (id serial PRIMARY KEY, correlation_id varchar, short_url varchar UNIQUE, original_url varchar);")
+	_, err = db.Exec("CREATE TABLE IF NOT EXISTS urls (id serial PRIMARY KEY, correlation_id varchar, user_id varchar, short_url varchar UNIQUE, original_url varchar);")
 	if err != nil {
-		log.Print(err)
+		panic(err)
 	}
 	return &DBStorage{DSN: DSN, db: db}
 }
@@ -36,10 +36,10 @@ func (ds *DBStorage) Load() error {
 func (ds *DBStorage) Save(newURL URL) (int, error) {
 	_, err := ds.db.Exec(`
         INSERT INTO urls
-        (correlation_id, short_url, original_url)
+        (correlation_id, user_id, short_url, original_url)
         VALUES
-        ($1, $2, $3);
-		`, newURL.CorrelationID, newURL.ShortURL, newURL.OriginalURL)
+        ($1, $2, $3, $4);
+		`, newURL.CorrelationID, newURL.UserID, newURL.ShortURL, newURL.OriginalURL)
 	if err != nil {
 		log.Print(err)
 	}
@@ -47,7 +47,7 @@ func (ds *DBStorage) Save(newURL URL) (int, error) {
 }
 
 // Создаём короткую ссылку
-func (ds *DBStorage) CreateShortURL(originalURL string, correlationID string) (string, error) {
+func (ds *DBStorage) CreateShortURL(originalURL string, correlationID string, userID string) (string, error) {
 	// Получаем хэш
 	shortURL := Encryption(originalURL)
 	//Возвращаемая ошибка
@@ -58,6 +58,7 @@ func (ds *DBStorage) CreateShortURL(originalURL string, correlationID string) (s
 		newURL := URL{
 			ShortURL:      shortURL,
 			OriginalURL:   originalURL,
+			UserID:        userID,
 			CorrelationID: correlationID,
 		}
 		// Добавляем данные в БД
@@ -85,6 +86,37 @@ func (ds *DBStorage) GetURL(shortURL string) (string, error) {
 		return "", err
 	} else {
 		return url.OriginalURL, nil
+	}
+}
+
+// Получаем все ссылки текущего пользователя
+func (ds *DBStorage) GetUserURLs(userID string) ([]URL, error) {
+	ds.mu.Lock()
+	defer ds.mu.Unlock()
+
+	var resp []URL
+
+	rows, err := ds.db.Query("SELECT id, correlation_id, short_url, original_url from urls WHERE user_id = $1", userID)
+	if err != nil {
+		return nil, err
+	}
+	// обязательно закрываем перед возвратом функции
+	defer rows.Close()
+
+	// пробегаем по всем записям
+	for rows.Next() {
+		var url URL
+		err = rows.Scan(&url.ID, &url.CorrelationID, &url.ShortURL, &url.OriginalURL)
+		if err != nil {
+			return nil, err
+		}
+		resp = append(resp, url)
+	}
+
+	if len(resp) > 0 {
+		return resp, nil
+	} else {
+		return nil, errors.New("NOT_FOUND")
 	}
 }
 

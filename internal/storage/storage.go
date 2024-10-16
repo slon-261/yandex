@@ -10,6 +10,7 @@ import (
 type URL struct {
 	ID            int    `json:"id"`
 	CorrelationID string `json:"correlation_id"`
+	UserID        string `json:"user_id"`
 	ShortURL      string `json:"short_url"`
 	OriginalURL   string `json:"original_url"`
 }
@@ -18,8 +19,9 @@ type URL struct {
 type Storage interface {
 	Load() error
 	Save(newURL URL) (int, error)
-	CreateShortURL(originalURL string, correlationID string) (string, error)
+	CreateShortURL(originalURL string, correlationID string, userID string) (string, error)
 	GetURL(shortURL string) (string, error)
+	GetUserURLs(userID string) ([]URL, error)
 	Ping() error
 	Close() error
 }
@@ -49,11 +51,14 @@ func NewStorage(flagDataBaseDSN string, flagFilePath string) *StorageType {
 func Load(storage *StorageType) error {
 	return storage.sType.Load()
 }
-func CreateShortURL(storage *StorageType, shortURL string, correlationID string) (string, error) {
-	return storage.sType.CreateShortURL(shortURL, correlationID)
+func CreateShortURL(storage *StorageType, shortURL string, correlationID string, userID string) (string, error) {
+	return storage.sType.CreateShortURL(shortURL, correlationID, userID)
 }
 func GetURL(storage *StorageType, shortURL string) (string, error) {
 	return storage.sType.GetURL(shortURL)
+}
+func GetUserURLs(storage *StorageType, userID string) ([]URL, error) {
+	return storage.sType.GetUserURLs(userID)
 }
 func Ping(storage *StorageType) error {
 	return storage.sType.Ping()

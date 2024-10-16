@@ -9,6 +9,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"slon-261/yandex/internal/auth"
 	d "slon-261/yandex/internal/decompress"
 	l "slon-261/yandex/internal/logger"
 	"slon-261/yandex/internal/models"
@@ -30,7 +31,7 @@ func postPage(w http.ResponseWriter, r *http.Request) {
 	originalURL := strings.TrimSpace(string(body))
 
 	// Сохраняем короткую ссылку
-	shortURL, errCreate := s.CreateShortURL(storage, originalURL, "")
+	shortURL, errCreate := s.CreateShortURL(storage, originalURL, "", auth.GetCurrentUserID())
 	//Если при создании ссылки была ошибка - возвращаем код 409, но в теле указыаем ссылку
 	var status int
 	if errCreate != nil {
@@ -62,8 +63,10 @@ func postJSONPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	auth.GetUserID(r)
+
 	// Сохраняем короткую ссылку
-	shortURL, errCreate := s.CreateShortURL(storage, req.URL, "")
+	shortURL, errCreate := s.CreateShortURL(storage, req.URL, "", auth.GetCurrentUserID())
 	//Если при создании ссылки была ошибка - возвращаем код 409, но в теле указыаем ссылку
 	var status int
 	if errCreate != nil {
@@ -106,7 +109,7 @@ func postBatchPage(w http.ResponseWriter, r *http.Request) {
 	var respCurr models.ResponseBatch
 	for _, element := range req {
 		// Сохраняем короткую ссылку
-		shortURL, _ := s.CreateShortURL(storage, element.URL, element.CorrelationID)
+		shortURL, _ := s.CreateShortURL(storage, element.URL, element.CorrelationID, auth.GetCurrentUserID())
 		respCurr.ShortURL = flagBaseURL + "/" + shortURL
 		respCurr.CorrelationID = element.CorrelationID
 		resp = append(resp, respCurr)
@@ -140,6 +143,32 @@ func getPage(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func userURLsPage(w http.ResponseWriter, r *http.Request) {
+	//Если не смогли получить из куков - ошибка
+	if auth.GetUserID(r) == "" {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	// Получаем все ссылки по указанному пользователю
+	urls, err := s.GetUserURLs(storage, auth.GetCurrentUserID())
+	if err != nil {
+		http.Error(w, "No content", http.StatusNoContent)
+		return
+	} else {
+		responseJSON, err := json.MarshalIndent(urls, "", "   ")
+		if err != nil {
+			http.Error(w, "JSON error", http.StatusInternalServerError)
+			return
+		}
+
+		// Выводим новую ссылку на экран
+		w.Header().Set("content-type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write(responseJSON)
+	}
+}
+
 func pingPage(w http.ResponseWriter, r *http.Request) {
 	err := s.Ping(storage)
 
@@ -158,10 +187,12 @@ func createRouter() *chi.Mux {
 	r.Use(l.RequestLogger(logger)) // Логгирование
 	r.Use(middleware.Compress(5))  // Сжатие ответа
 	r.Use(d.Decompress)            // Распаковка сжатого запроса
+	r.Use(auth.Authenticator())
 	r.Post("/", postPage)
 	r.Post("/api/shorten", postJSONPage)
 	r.Post("/api/shorten/batch", postBatchPage)
 	r.Get("/ping", pingPage)
+	r.Get("/api/user/urls", userURLsPage)
 	r.Get("/{url}", getPage)
 	return r
 }

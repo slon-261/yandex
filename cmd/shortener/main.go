@@ -31,11 +31,6 @@ func postPage(w http.ResponseWriter, r *http.Request) {
 
 	// Сохраняем короткую ссылку
 	shortURL, errCreate := s.CreateShortURL(storage, originalURL, "")
-	response := flagBaseURL + "/" + shortURL
-
-	// Выводим новую ссылку на экран
-	w.Header().Set("content-type", "text/plain")
-
 	//Если при создании ссылки была ошибка - возвращаем код 409, но в теле указыаем ссылку
 	var status int
 	if errCreate != nil {
@@ -43,6 +38,9 @@ func postPage(w http.ResponseWriter, r *http.Request) {
 	} else {
 		status = http.StatusCreated
 	}
+
+	response := flagBaseURL + "/" + shortURL
+
 	// Выводим новую ссылку на экран
 	w.Header().Set("content-type", "text/plain")
 	w.WriteHeader(status)
@@ -66,6 +64,14 @@ func postJSONPage(w http.ResponseWriter, r *http.Request) {
 
 	// Сохраняем короткую ссылку
 	shortURL, errCreate := s.CreateShortURL(storage, req.URL, "")
+	//Если при создании ссылки была ошибка - возвращаем код 409, но в теле указыаем ссылку
+	var status int
+	if errCreate != nil {
+		status = http.StatusConflict
+	} else {
+		status = http.StatusCreated
+	}
+
 	var resp models.Response
 	resp.Result = flagBaseURL + "/" + shortURL
 	responseJSON, err := json.MarshalIndent(resp, "", "   ")
@@ -74,13 +80,6 @@ func postJSONPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//Если при создании ссылки была ошибка - возвращаем код 409, но в теле указыаем ссылку
-	var status int
-	if errCreate != nil {
-		status = http.StatusConflict
-	} else {
-		status = http.StatusCreated
-	}
 	// Выводим новую ссылку на экран
 	w.Header().Set("content-type", "application/json")
 	w.WriteHeader(status)

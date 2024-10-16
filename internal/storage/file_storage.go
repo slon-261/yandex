@@ -15,7 +15,7 @@ type FileStorage struct {
 	file     *os.File
 	scanner  *bufio.Scanner
 	urls     map[string]URL
-	mu       sync.Mutex
+	mu       sync.RWMutex
 }
 
 // Создаём новое хранилище, открываем файл
@@ -57,7 +57,10 @@ func (fs *FileStorage) Save(newURL URL) (int, error) {
 	// Добавляем данные в мапу
 	fs.urls[newURL.ShortURL] = newURL
 
-	data, _ := json.Marshal(&newURL)
+	data, err := json.Marshal(&newURL)
+	if err != nil {
+		return 0, err
+	}
 	// добавляем перенос строки
 	data = append(data, '\n')
 
@@ -67,7 +70,7 @@ func (fs *FileStorage) Save(newURL URL) (int, error) {
 // Создаём короткую ссылку
 func (fs *FileStorage) CreateShortURL(originalURL string, correlationID string) (string, error) {
 	// Получаем хэш
-	shortURL := encryption(originalURL)
+	shortURL := Encryption(originalURL)
 	//Возвращаемая ошибка
 	var errReturn error
 	// Ищем ссылку в хранилище. Если не нашли - добавляем

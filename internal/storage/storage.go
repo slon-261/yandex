@@ -62,7 +62,7 @@ func Close(storage *StorageType) error {
 	return storage.sType.Close()
 }
 
-func encryption(str string) string {
+func Encryption(str string) string {
 	// Генерируем короткую ссылку
 	h := sha256.New()
 	h.Write([]byte(str))

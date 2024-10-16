@@ -8,7 +8,7 @@ import (
 // Массив URL
 type MemStorage struct {
 	urls map[string]URL
-	mu   sync.Mutex
+	mu   sync.RWMutex
 }
 
 // Создаём новое хранилище
@@ -32,7 +32,7 @@ func (ms *MemStorage) Save(newURL URL) (int, error) {
 // Создаём короткую ссылку
 func (ms *MemStorage) CreateShortURL(originalURL string, correlationID string) (string, error) {
 	// Получаем хэш
-	shortURL := encryption(originalURL)
+	shortURL := Encryption(originalURL)
 	//Возвращаемая ошибка
 	var errReturn error
 	// Ищем ссылку в хранилище. Если не нашли - добавляем

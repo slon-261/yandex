@@ -156,7 +156,17 @@ func userURLsPage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "No content", http.StatusNoContent)
 		return
 	} else {
-		responseJSON, err := json.MarshalIndent(urls, "", "   ")
+		// Преобразуем в нужный вид, в том числе добавляем flagBaseURL
+		var resp []models.ResponseUserUrls
+		var respCurr models.ResponseUserUrls
+		for _, element := range urls {
+			// Сохраняем короткую ссылку
+			respCurr.ShortURL = flagBaseURL + "/" + element.ShortURL
+			respCurr.OriginalURL = element.OriginalURL
+			resp = append(resp, respCurr)
+		}
+
+		responseJSON, err := json.MarshalIndent(resp, "", "   ")
 		if err != nil {
 			http.Error(w, "JSON error", http.StatusInternalServerError)
 			return

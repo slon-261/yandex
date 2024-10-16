@@ -112,6 +112,11 @@ func (ds *DBStorage) GetUserURLs(userID string) ([]URL, error) {
 		}
 		resp = append(resp, url)
 	}
+	// проверяем на ошибки
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
 
 	if len(resp) > 0 {
 		return resp, nil

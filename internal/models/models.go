@@ -21,3 +21,9 @@ type ResponseBatch struct {
 	ShortURL      string `json:"short_url"`
 	CorrelationID string `json:"correlation_id"`
 }
+
+// Response описывает ответ сервера.
+type ResponseUserUrls struct {
+	ShortURL    string `json:"short_url"`
+	OriginalURL string `json:"original_url"`
+}

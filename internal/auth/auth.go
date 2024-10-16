@@ -21,8 +21,8 @@ type Claims struct {
 // Утверждения для текущего пользователя
 var UserClaims Claims
 
-const TOKEN_EXP = time.Hour * 3
-const SECRET_KEY = "Ec#9<8gc,/7zu*vTeX)=q96JQw+I8|]6/+*'8YWqx\"G06Yy\"H;)wwn`K+*Z;C(i"
+const TokenExp = time.Hour * 3
+const SecretKey = "Ec#9<8gc,/7zu*vTeX)=q96JQw+I8|]6/+*'8YWqx\"G06Yy\"H;)wwn`K+*Z;C(i"
 
 // BuildJWTString создаёт токен и возвращает его в виде строки.
 func BuildJWTString() (string, error) {
@@ -34,7 +34,7 @@ func BuildJWTString() (string, error) {
 	UserClaims = Claims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			// когда создан токен
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(TOKEN_EXP)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(TokenExp)),
 		},
 		// собственное утверждение
 		UserID: UserID,
@@ -44,7 +44,7 @@ func BuildJWTString() (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, UserClaims)
 
 	// создаём строку токена
-	tokenString, err := token.SignedString([]byte(SECRET_KEY))
+	tokenString, err := token.SignedString([]byte(SecretKey))
 	if err != nil {
 		return ``, err
 	}
@@ -87,7 +87,7 @@ func GetUserID(r *http.Request) string {
 			if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 				return "", fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
 			}
-			return []byte(SECRET_KEY), nil
+			return []byte(SecretKey), nil
 		})
 	if err != nil {
 		log.Print(err)
@@ -114,7 +114,7 @@ func Authenticator() func(http.Handler) http.Handler {
 				cookie := &http.Cookie{
 					Name:   "Authorization",
 					Value:  "Bearer " + token,
-					MaxAge: int(TOKEN_EXP),
+					MaxAge: int(TokenExp),
 				}
 				http.SetCookie(w, cookie)
 			}

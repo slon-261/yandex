@@ -3,23 +3,33 @@ package storage
 import (
 	"crypto/sha256"
 	"encoding/base64"
+	"errors"
 	"strings"
 )
+
+var ErrNotFound = errors.New("NOT_FOUND")
+var ErrShortURLExist = errors.New("SHORT_URL_EXIST")
+var ErrNotSupported = errors.New("NOT_SUPPORTED")
+var ErrShortURLDeleted = errors.New("DELETED")
 
 // Информация о ссылке
 type URL struct {
 	ID            int    `json:"id"`
 	CorrelationID string `json:"correlation_id"`
+	UserID        string `json:"user_id"`
 	ShortURL      string `json:"short_url"`
 	OriginalURL   string `json:"original_url"`
+	DeletedFlag   bool   `json:"deleted_flag"`
 }
 
 // Интерфейс для хранилищ
 type Storage interface {
 	Load() error
 	Save(newURL URL) (int, error)
-	CreateShortURL(originalURL string, correlationID string) (string, error)
+	CreateShortURL(originalURL string, correlationID string, userID string) (string, error)
 	GetURL(shortURL string) (string, error)
+	GetUserURLs(userID string) ([]URL, error)
+	DeleteUserURLs(userID string, urls []string) error
 	Ping() error
 	Close() error
 }
@@ -49,11 +59,17 @@ func NewStorage(flagDataBaseDSN string, flagFilePath string) *StorageType {
 func Load(storage *StorageType) error {
 	return storage.sType.Load()
 }
-func CreateShortURL(storage *StorageType, shortURL string, correlationID string) (string, error) {
-	return storage.sType.CreateShortURL(shortURL, correlationID)
+func CreateShortURL(storage *StorageType, shortURL string, correlationID string, userID string) (string, error) {
+	return storage.sType.CreateShortURL(shortURL, correlationID, userID)
 }
 func GetURL(storage *StorageType, shortURL string) (string, error) {
 	return storage.sType.GetURL(shortURL)
+}
+func GetUserURLs(storage *StorageType, userID string) ([]URL, error) {
+	return storage.sType.GetUserURLs(userID)
+}
+func DeleteUserURLs(storage *StorageType, userID string, urls []string) error {
+	return storage.sType.DeleteUserURLs(userID, urls)
 }
 func Ping(storage *StorageType) error {
 	return storage.sType.Ping()

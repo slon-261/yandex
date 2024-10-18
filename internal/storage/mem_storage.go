@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"errors"
 	"sync"
 )
 
@@ -30,7 +29,7 @@ func (ms *MemStorage) Save(newURL URL) (int, error) {
 }
 
 // Создаём короткую ссылку
-func (ms *MemStorage) CreateShortURL(originalURL string, correlationID string) (string, error) {
+func (ms *MemStorage) CreateShortURL(originalURL string, correlationID string, userID string) (string, error) {
 	// Получаем хэш
 	shortURL := Encryption(originalURL)
 	//Возвращаемая ошибка
@@ -42,6 +41,7 @@ func (ms *MemStorage) CreateShortURL(originalURL string, correlationID string) (
 			ShortURL:      shortURL,
 			OriginalURL:   originalURL,
 			CorrelationID: correlationID,
+			UserID:        userID,
 			ID:            len(ms.urls) + 1,
 		}
 
@@ -49,7 +49,7 @@ func (ms *MemStorage) CreateShortURL(originalURL string, correlationID string) (
 		ms.Save(newURL)
 	} else {
 		//Если ссылка уже создана ранее - возвращаем ошибку
-		errReturn = errors.New("SHORT_URL_EXIST")
+		errReturn = ErrShortURLExist
 	}
 
 	// Возвращаем короткую ссылку
@@ -64,13 +64,36 @@ func (ms *MemStorage) GetURL(shortURL string) (string, error) {
 	if ok {
 		return url.OriginalURL, nil
 	} else {
-		return "", errors.New("NOT_FOUND")
+		return "", ErrNotFound
 	}
+}
+
+// Получаем все ссылки текущего пользователя
+func (ms *MemStorage) GetUserURLs(userID string) ([]URL, error) {
+	ms.mu.Lock()
+	defer ms.mu.Unlock()
+
+	var resp []URL
+	// Перебираем всю мапу, берем только нужные объекты
+	for _, element := range ms.urls {
+		if element.UserID == userID {
+			resp = append(resp, element)
+		}
+	}
+	if len(resp) > 0 {
+		return resp, nil
+	} else {
+		return nil, ErrNotFound
+	}
+}
+
+func (ms *MemStorage) DeleteUserURLs(userID string, urls []string) error {
+	return ErrNotSupported
 }
 
 // Пинг БД, не поддерживается
 func (ms *MemStorage) Ping() error {
-	return errors.New("NOT_SUPPORTED")
+	return ErrNotSupported
 }
 
 func (ms *MemStorage) Close() error {

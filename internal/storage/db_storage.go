@@ -19,7 +19,7 @@ func NewDBStorage(DSN string) *DBStorage {
 	if err != nil {
 		panic(err)
 	}
-	_, err = db.Exec("CREATE TABLE IF NOT EXISTS urls (id serial PRIMARY KEY, correlation_id varchar, user_id varchar, short_url varchar UNIQUE, original_url varchar);")
+	_, err = db.Exec("CREATE TABLE IF NOT EXISTS urls (id SERIAL PRIMARY KEY, correlation_id VARCHAR, user_id VARCHAR, short_url VARCHAR UNIQUE, original_url varchar, deleted_flag BOOLEAN DEFAULT FALSE);")
 	if err != nil {
 		panic(err)
 	}
@@ -131,4 +131,36 @@ func (ds *DBStorage) Ping() error {
 
 func (ds *DBStorage) Close() error {
 	return ds.db.Close()
+}
+
+// Удаляем переданные ссылки, при условии что они принадлежат указанному пользователю
+func (ds *DBStorage) DeleteUserURLs(userID string, urls []string) error {
+
+	// Создаём горутину, чтобы удалить ссылки асинхронно
+	go func() {
+		tx, err := ds.db.Begin()
+		if err != nil {
+			panic(err)
+		}
+		// можно вызвать Rollback в defer,
+		// если Commit будет раньше, то откат проигнорируется
+		defer tx.Rollback()
+
+		stmt, err := tx.Prepare(
+			"UPDATE urls SET deleted_flag = true WHERE short_url = $1 AND user_id = $2")
+		if err != nil {
+			panic(err)
+		}
+		defer stmt.Close()
+
+		for _, v := range urls {
+			_, err := stmt.Exec(v, userID)
+			if err != nil {
+				panic(err)
+			}
+		}
+		tx.Commit()
+	}()
+
+	return nil
 }

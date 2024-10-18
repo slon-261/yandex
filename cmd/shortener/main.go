@@ -179,6 +179,38 @@ func userURLsPage(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func deleteUserURLsPage(w http.ResponseWriter, r *http.Request) {
+	// Если не смогли получить из куков - ошибка
+	if auth.GetUserID(r) == "" {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	// Получаем массив ссылок из body
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Body error", http.StatusBadRequest)
+		return
+	}
+
+	var req []string
+	if err = json.Unmarshal([]byte(body), &req); err != nil {
+		log.Print(err)
+		http.Error(w, "JSON error", http.StatusBadRequest)
+		return
+	}
+
+	// Удаляем переданные ссылки, при условии что они принадлежат указанному пользователю
+	err = s.DeleteUserURLs(storage, auth.GetCurrentUserID(), req)
+	if err != nil {
+		log.Print(err)
+		http.Error(w, "Delete error", http.StatusInternalServerError)
+	} else {
+		w.WriteHeader(http.StatusAccepted)
+		return
+	}
+}
+
 func pingPage(w http.ResponseWriter, r *http.Request) {
 	err := s.Ping(storage)
 
@@ -203,6 +235,7 @@ func createRouter() *chi.Mux {
 	r.Post("/api/shorten/batch", postBatchPage)
 	r.Get("/ping", pingPage)
 	r.Get("/api/user/urls", userURLsPage)
+	r.Delete("/api/user/urls", deleteUserURLsPage)
 	r.Get("/{url}", getPage)
 	return r
 }

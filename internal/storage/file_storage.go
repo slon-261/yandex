@@ -126,6 +126,10 @@ func (fs *FileStorage) GetUserURLs(userID string) ([]URL, error) {
 	}
 }
 
+func (fs *FileStorage) DeleteUserURLs(userID string, urls []string) error {
+	return ErrNotSupported
+}
+
 // Пинг БД, не поддерживается
 func (fs *FileStorage) Ping() error {
 	return ErrNotSupported

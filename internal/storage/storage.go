@@ -18,6 +18,7 @@ type URL struct {
 	UserID        string `json:"user_id"`
 	ShortURL      string `json:"short_url"`
 	OriginalURL   string `json:"original_url"`
+	DeletedFlag   string `json:"deleted_flag"`
 }
 
 // Интерфейс для хранилищ
@@ -27,6 +28,7 @@ type Storage interface {
 	CreateShortURL(originalURL string, correlationID string, userID string) (string, error)
 	GetURL(shortURL string) (string, error)
 	GetUserURLs(userID string) ([]URL, error)
+	DeleteUserURLs(userID string, urls []string) error
 	Ping() error
 	Close() error
 }
@@ -64,6 +66,9 @@ func GetURL(storage *StorageType, shortURL string) (string, error) {
 }
 func GetUserURLs(storage *StorageType, userID string) ([]URL, error) {
 	return storage.sType.GetUserURLs(userID)
+}
+func DeleteUserURLs(storage *StorageType, userID string, urls []string) error {
+	return storage.sType.DeleteUserURLs(userID, urls)
 }
 func Ping(storage *StorageType) error {
 	return storage.sType.Ping()

@@ -87,6 +87,10 @@ func (ms *MemStorage) GetUserURLs(userID string) ([]URL, error) {
 	}
 }
 
+func (ms *MemStorage) DeleteUserURLs(userID string, urls []string) error {
+	return ErrNotSupported
+}
+
 // Пинг БД, не поддерживается
 func (ms *MemStorage) Ping() error {
 	return ErrNotSupported

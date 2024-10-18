@@ -10,6 +10,7 @@ import (
 var ErrNotFound = errors.New("NOT_FOUND")
 var ErrShortURLExist = errors.New("SHORT_URL_EXIST")
 var ErrNotSupported = errors.New("NOT_SUPPORTED")
+var ErrShortURLDeleted = errors.New("DELETED")
 
 // Информация о ссылке
 type URL struct {
@@ -18,7 +19,7 @@ type URL struct {
 	UserID        string `json:"user_id"`
 	ShortURL      string `json:"short_url"`
 	OriginalURL   string `json:"original_url"`
-	DeletedFlag   string `json:"deleted_flag"`
+	DeletedFlag   bool   `json:"deleted_flag"`
 }
 
 // Интерфейс для хранилищ

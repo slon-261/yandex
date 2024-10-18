@@ -136,6 +136,10 @@ func getPage(w http.ResponseWriter, r *http.Request) {
 	// Ищем ссылку в хранилище
 	url, err := s.GetURL(storage, shortURL)
 	if err != nil {
+		if err == s.ErrShortURLDeleted {
+			http.Error(w, "Deleted", http.StatusGone)
+			return
+		}
 		http.Error(w, "Not found", http.StatusBadRequest)
 	} else {
 		w.Header().Set("Location", url)

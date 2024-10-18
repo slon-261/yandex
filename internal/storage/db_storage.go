@@ -77,12 +77,14 @@ func (ds *DBStorage) GetURL(shortURL string) (string, error) {
 	ds.mu.Lock()
 	defer ds.mu.Unlock()
 
-	row := ds.db.QueryRow("SELECT id, correlation_id, short_url, original_url from urls WHERE short_url = $1 LIMIT 1", shortURL)
+	row := ds.db.QueryRow("SELECT id, correlation_id, short_url, original_url, deleted_flag from urls WHERE short_url = $1 LIMIT 1", shortURL)
 	var url URL
-	err := row.Scan(&url.ID, &url.CorrelationID, &url.ShortURL, &url.OriginalURL)
+	err := row.Scan(&url.ID, &url.CorrelationID, &url.ShortURL, &url.OriginalURL, &url.DeletedFlag)
 
 	if err != nil {
 		return "", err
+	} else if url.DeletedFlag == true {
+		return "", ErrShortURLDeleted
 	} else {
 		return url.OriginalURL, nil
 	}

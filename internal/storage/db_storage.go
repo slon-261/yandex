@@ -83,7 +83,7 @@ func (ds *DBStorage) GetURL(shortURL string) (string, error) {
 
 	if err != nil {
 		return "", err
-	} else if url.DeletedFlag == true {
+	} else if url.DeletedFlag {
 		return "", ErrShortURLDeleted
 	} else {
 		return url.OriginalURL, nil

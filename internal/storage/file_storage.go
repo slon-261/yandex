@@ -3,7 +3,6 @@ package storage
 import (
 	"bufio"
 	"encoding/json"
-	"errors"
 	"os"
 	"path/filepath"
 	"sync"
@@ -68,7 +67,7 @@ func (fs *FileStorage) Save(newURL URL) (int, error) {
 }
 
 // Создаём короткую ссылку
-func (fs *FileStorage) CreateShortURL(originalURL string, correlationID string) (string, error) {
+func (fs *FileStorage) CreateShortURL(originalURL string, correlationID string, userID string) (string, error) {
 	// Получаем хэш
 	shortURL := Encryption(originalURL)
 	//Возвращаемая ошибка
@@ -80,6 +79,7 @@ func (fs *FileStorage) CreateShortURL(originalURL string, correlationID string) 
 			ShortURL:      shortURL,
 			OriginalURL:   originalURL,
 			CorrelationID: correlationID,
+			UserID:        userID,
 			ID:            len(fs.urls) + 1,
 		}
 
@@ -88,7 +88,7 @@ func (fs *FileStorage) CreateShortURL(originalURL string, correlationID string) 
 		errReturn = nil
 	} else {
 		//Если ссылка уже создана ранее - возвращаем ошибку
-		errReturn = errors.New("SHORT_URL_EXIST")
+		errReturn = ErrShortURLExist
 	}
 
 	// Возвращаем короткую ссылку
@@ -103,13 +103,36 @@ func (fs *FileStorage) GetURL(shortURL string) (string, error) {
 	if ok {
 		return url.OriginalURL, nil
 	} else {
-		return "", errors.New("NOT_FOUND")
+		return "", ErrNotFound
 	}
+}
+
+// Получаем все ссылки текущего пользователя
+func (fs *FileStorage) GetUserURLs(userID string) ([]URL, error) {
+	fs.mu.Lock()
+	defer fs.mu.Unlock()
+
+	var resp []URL
+	// Перебираем всю мапу, берем только нужные объекты
+	for _, element := range fs.urls {
+		if element.UserID == userID {
+			resp = append(resp, element)
+		}
+	}
+	if len(resp) > 0 {
+		return resp, nil
+	} else {
+		return nil, ErrNotFound
+	}
+}
+
+func (fs *FileStorage) DeleteUserURLs(userID string, urls []string) error {
+	return ErrNotSupported
 }
 
 // Пинг БД, не поддерживается
 func (fs *FileStorage) Ping() error {
-	return errors.New("NOT_SUPPORTED")
+	return ErrNotSupported
 }
 
 func (fs *FileStorage) Close() error {

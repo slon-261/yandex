@@ -1,1 +1,0 @@
- curl -X POST http://localhost:8080/api/shorten/batch -d '[{"correlation_id": "qqq","original_url": "http://du2mkj9ffffffffffff"},{"correlation_id": "www","original_url": "http://e1.ru"}]'

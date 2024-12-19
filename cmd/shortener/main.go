@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"runtime"
 	"runtime/pprof"
 	"slon-261/yandex/internal/auth"
@@ -270,7 +271,9 @@ func main() {
 	log.Print("DB connected at ", flagDataBaseDSN)
 
 	// создаём файл журнала профилирования памяти
-	fmem, err := os.Create("./profiles/base.pprof")
+	fmemPath := "./profiles/base.pprof"
+	os.MkdirAll(filepath.Dir(fmemPath), 0666)
+	fmem, err := os.Create(fmemPath)
 
 	if err != nil {
 		panic(err)

@@ -9,6 +9,9 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
+	"runtime"
+	"runtime/pprof"
 	"slon-261/yandex/internal/auth"
 	d "slon-261/yandex/internal/decompress"
 	l "slon-261/yandex/internal/logger"
@@ -266,6 +269,19 @@ func main() {
 	log.Print("File storage is ", flagFilePath)
 	log.Print("DB connected at ", flagDataBaseDSN)
 
+	// создаём файл журнала профилирования памяти
+	fmem, err := os.Create("./profiles/base.pprof")
+
+	if err != nil {
+		panic(err)
+	}
+	defer fmem.Close()
+	runtime.GC() // получаем статистику по использованию памяти
+	if err := pprof.WriteHeapProfile(fmem); err != nil {
+		panic(err)
+	}
+
 	// r передаётся как http.Handler
 	http.ListenAndServe(flagRunAddr, r)
+
 }

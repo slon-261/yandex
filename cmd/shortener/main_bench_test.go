@@ -8,12 +8,18 @@ package main
 import (
 	"net/http"
 	"net/http/httptest"
+	s "slon-261/yandex/internal/storage"
 	"strconv"
 	"strings"
 	"testing"
 )
 
 func BenchmarkPostPage(b *testing.B) {
+
+	storage = s.NewStorage(flagDataBaseDSN, flagFilePath)
+	// Загружаем из файла\БД все ранее сгенерированные ссылки
+	s.Load(storage)
+	defer s.Close(storage)
 
 	for i := 0; i < b.N; i++ {
 		body := "http://benchmark" + strconv.Itoa(i)

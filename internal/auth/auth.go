@@ -21,7 +21,10 @@ type Claims struct {
 // Утверждения для текущего пользователя
 var UserClaims Claims
 
+// TokenExp время действия токена
 const TokenExp = time.Hour * 3
+
+// SecretKey секретный ключ
 const SecretKey = "Ec#9<8gc,/7zu*vTeX)=q96JQw+I8|]6/+*'8YWqx\"G06Yy\"H;)wwn`K+*Z;C(i"
 
 // BuildJWTString создаёт токен и возвращает его в виде строки.
@@ -53,7 +56,7 @@ func BuildJWTString() (string, error) {
 	return tokenString, nil
 }
 
-// Генерация случайной строки
+// CreateUserID Генерация случайной строки
 func CreateUserID(n int) (string, error) {
 	b := make([]byte, n)
 	_, err := rand.Read(b)
@@ -63,12 +66,12 @@ func CreateUserID(n int) (string, error) {
 	return hex.EncodeToString(b), nil
 }
 
-// Получаем текущий ИД пользователя (созданный или полученный из куков)
+// GetCurrentUserID Получаем текущий ИД пользователя (созданный или полученный из куков)
 func GetCurrentUserID() string {
 	return UserClaims.UserID
 }
 
-// Получаем ИД пользователя из токена, который получаем из куков
+// GetUserID Получаем ИД пользователя из токена, который получаем из куков
 func GetUserID(r *http.Request) string {
 	//Получаем куки
 	cookie, err := r.Cookie("Authorization")
@@ -101,7 +104,7 @@ func GetUserID(r *http.Request) string {
 	return UserClaims.UserID
 }
 
-// Авторизация для роутера Chi
+// Authenticator Авторизация для роутера Chi
 func Authenticator() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		hfn := func(w http.ResponseWriter, r *http.Request) {

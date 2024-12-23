@@ -4,6 +4,7 @@ import (
 	"github.com/caarlos0/env"
 )
 
+// Config конфигурация приложения
 type Config struct {
 	DefaultRunAddr     string
 	DefaultBaseURL     string
@@ -15,6 +16,7 @@ type Config struct {
 	EnvDataBaseDSN     string `env:"DATABASE_DSN"`
 }
 
+// NewConfig инициализация конфига
 func NewConfig() *Config {
 
 	var cfg Config

@@ -236,6 +236,7 @@ func pingPage(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// createRouter создание роутера
 func createRouter() *chi.Mux {
 	logger, _ := zap.NewProduction()
 	defer logger.Sync()

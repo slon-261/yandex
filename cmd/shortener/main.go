@@ -24,6 +24,7 @@ import (
 // Хранилище ссылок
 var storage *s.StorageType
 
+// postPage хэндлер сокращения ссылок
 func postPage(w http.ResponseWriter, r *http.Request) {
 
 	// Получаем ссылку из body
@@ -52,6 +53,7 @@ func postPage(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(response))
 }
 
+// postJSONPage хэндлер сокращения ссылок в формате JSON
 func postJSONPage(w http.ResponseWriter, r *http.Request) {
 
 	// Получаем ссылку из body
@@ -93,6 +95,7 @@ func postJSONPage(w http.ResponseWriter, r *http.Request) {
 	w.Write(responseJSON)
 }
 
+// postJSONPage хэндлер пакетного сокращения ссылок
 func postBatchPage(w http.ResponseWriter, r *http.Request) {
 
 	// Получаем ссылку из body
@@ -131,6 +134,7 @@ func postBatchPage(w http.ResponseWriter, r *http.Request) {
 	w.Write(responseJSON)
 }
 
+// getPage хэндлер получения полной ссылки
 func getPage(w http.ResponseWriter, r *http.Request) {
 
 	// Получаем короткую ссылку
@@ -151,6 +155,7 @@ func getPage(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// userURLsPage хэндлер получения всех ссылок для пользователя
 func userURLsPage(w http.ResponseWriter, r *http.Request) {
 	//Если не смогли получить из куков - ошибка
 	if auth.GetUserID(r) == "" {
@@ -187,6 +192,7 @@ func userURLsPage(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// deleteUserURLsPage хэндлер удаления ссылок
 func deleteUserURLsPage(w http.ResponseWriter, r *http.Request) {
 	// Если не смогли получить из куков - ошибка
 	if auth.GetUserID(r) == "" {
@@ -219,6 +225,7 @@ func deleteUserURLsPage(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// pingPage хэндлер проверки соеднения с БД
 func pingPage(w http.ResponseWriter, r *http.Request) {
 	err := s.Ping(storage)
 

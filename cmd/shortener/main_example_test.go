@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func ExamplePostPage() {
+func Example_postPage() {
 
 	storage = s.NewStorage(flagDataBaseDSN, flagFilePath)
 	// Загружаем из файла\БД все ранее сгенерированные ссылки
@@ -27,7 +27,7 @@ func ExamplePostPage() {
 	// http://localhost:8080/QrPnX5IUXS
 }
 
-func ExamplePostJsonPage() {
+func Example_postJsonPage() {
 
 	body := "{\"url\":\"https://practicum.yandex.ru/JSON\"}"
 	r := httptest.NewRequest(http.MethodPost, "/api/shorten", strings.NewReader(body))
@@ -43,7 +43,7 @@ func ExamplePostJsonPage() {
 	// }
 }
 
-func ExamplePostBatchPage() {
+func Example_postBatchPage() {
 
 	body := "[{\"correlation_id\": \"qqq\",\"original_url\": \"http://du2mkj9ffffffffffff\"},{\"correlation_id\": \"www\",\"original_url\": \"http://e1.ru\"}]"
 	r := httptest.NewRequest(http.MethodPost, "/api/shorten/batch", strings.NewReader(body))
@@ -66,7 +66,7 @@ func ExamplePostBatchPage() {
 	// ]
 }
 
-func ExampleGetPage() {
+func Example_getPage() {
 
 	r := httptest.NewRequest(http.MethodPost, "/QrPnX5IUXS", nil)
 	w := httptest.NewRecorder()

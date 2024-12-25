@@ -8,7 +8,7 @@ import (
 	"sync"
 )
 
-// Массив URL + указатель на файл
+// FileStorage Массив URL + указатель на файл
 type FileStorage struct {
 	filename string
 	file     *os.File
@@ -17,7 +17,7 @@ type FileStorage struct {
 	mu       sync.RWMutex
 }
 
-// Создаём новое хранилище, открываем файл
+// NewFileStorage Создаём новое хранилище, открываем файл
 func NewFileStorage(filename string) *FileStorage {
 	// Пытаемся создать директорию
 	os.MkdirAll(filepath.Dir(filename), 0666)
@@ -29,7 +29,7 @@ func NewFileStorage(filename string) *FileStorage {
 	return &FileStorage{filename: filename, file: file}
 }
 
-// Создаём мапу с ссылками и подгружаем туда данные из файла
+// Load Создаём мапу с ссылками и подгружаем туда данные из файла
 func (fs *FileStorage) Load() error {
 	fs.urls = map[string]URL{}
 	// создаём новый scanner
@@ -51,7 +51,7 @@ func (fs *FileStorage) Load() error {
 	return nil
 }
 
-// Сохраняем данные в мапе и в файле
+// Save Сохраняем данные в мапе и в файле
 func (fs *FileStorage) Save(newURL URL) (int, error) {
 	// Добавляем данные в мапу
 	fs.urls[newURL.ShortURL] = newURL
@@ -66,7 +66,7 @@ func (fs *FileStorage) Save(newURL URL) (int, error) {
 	return fs.file.Write(data)
 }
 
-// Создаём короткую ссылку
+// CreateShortURL Создаём короткую ссылку
 func (fs *FileStorage) CreateShortURL(originalURL string, correlationID string, userID string) (string, error) {
 	// Получаем хэш
 	shortURL := Encryption(originalURL)
@@ -95,7 +95,7 @@ func (fs *FileStorage) CreateShortURL(originalURL string, correlationID string, 
 	return shortURL, errReturn
 }
 
-// Ищем ссылку в хранилище
+// GetURL Ищем ссылку в хранилище
 func (fs *FileStorage) GetURL(shortURL string) (string, error) {
 	fs.mu.Lock()
 	defer fs.mu.Unlock()
@@ -107,7 +107,7 @@ func (fs *FileStorage) GetURL(shortURL string) (string, error) {
 	}
 }
 
-// Получаем все ссылки текущего пользователя
+// GetUserURLs Получаем все ссылки текущего пользователя
 func (fs *FileStorage) GetUserURLs(userID string) ([]URL, error) {
 	fs.mu.Lock()
 	defer fs.mu.Unlock()
@@ -126,15 +126,17 @@ func (fs *FileStorage) GetUserURLs(userID string) ([]URL, error) {
 	}
 }
 
+// DeleteUserURLs Удаление ссылок, не поддерживается
 func (fs *FileStorage) DeleteUserURLs(userID string, urls []string) error {
 	return ErrNotSupported
 }
 
-// Пинг БД, не поддерживается
+// Ping Пинг БД, не поддерживается
 func (fs *FileStorage) Ping() error {
 	return ErrNotSupported
 }
 
+// Close Закртыие файла
 func (fs *FileStorage) Close() error {
 	return fs.file.Close()
 }

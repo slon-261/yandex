@@ -4,31 +4,31 @@ import (
 	"sync"
 )
 
-// Массив URL
+// MemStorage Массив URL
 type MemStorage struct {
 	urls map[string]URL
 	mu   sync.RWMutex
 }
 
-// Создаём новое хранилище
+// NewMemStorage Создаём новое хранилище
 func NewMemStorage() *MemStorage {
 	return &MemStorage{}
 }
 
-// Создаём мапу с ссылками
+// Load Создаём мапу с ссылками
 func (ms *MemStorage) Load() error {
 	ms.urls = map[string]URL{}
 	return nil
 }
 
-// Сохраняем данные в мапе
+// Save Сохраняем данные в мапе
 func (ms *MemStorage) Save(newURL URL) (int, error) {
 	// Добавляем данные в мапу
 	ms.urls[newURL.ShortURL] = newURL
 	return 0, nil
 }
 
-// Создаём короткую ссылку
+// CreateShortURL Создаём короткую ссылку
 func (ms *MemStorage) CreateShortURL(originalURL string, correlationID string, userID string) (string, error) {
 	// Получаем хэш
 	shortURL := Encryption(originalURL)
@@ -56,7 +56,7 @@ func (ms *MemStorage) CreateShortURL(originalURL string, correlationID string, u
 	return shortURL, errReturn
 }
 
-// Ищем ссылку в хранилище
+// GetURL Ищем ссылку в хранилище
 func (ms *MemStorage) GetURL(shortURL string) (string, error) {
 	ms.mu.Lock()
 	defer ms.mu.Unlock()
@@ -68,7 +68,7 @@ func (ms *MemStorage) GetURL(shortURL string) (string, error) {
 	}
 }
 
-// Получаем все ссылки текущего пользователя
+// GetUserURLs Получаем все ссылки текущего пользователя
 func (ms *MemStorage) GetUserURLs(userID string) ([]URL, error) {
 	ms.mu.Lock()
 	defer ms.mu.Unlock()
@@ -87,15 +87,17 @@ func (ms *MemStorage) GetUserURLs(userID string) ([]URL, error) {
 	}
 }
 
+// DeleteUserURLs Удаление ссылок, не поддерживается
 func (ms *MemStorage) DeleteUserURLs(userID string, urls []string) error {
 	return ErrNotSupported
 }
 
-// Пинг БД, не поддерживается
+// Ping Пинг БД, не поддерживается
 func (ms *MemStorage) Ping() error {
 	return ErrNotSupported
 }
 
+// Close Закрытие соединения, не поддерживается
 func (ms *MemStorage) Close() error {
 	return nil
 }

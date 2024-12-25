@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+// Decompress middleware для обработки сжатых данных
 func Decompress(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		// проверяем, что клиент отправил серверу сжатые данные в формате gzip

@@ -6,14 +6,14 @@ import (
 	"sync"
 )
 
-// Массив URL + указатель на файл
+// DBStorage Массив URL + указатель на файл
 type DBStorage struct {
 	DSN string
 	db  *sql.DB
 	mu  sync.RWMutex
 }
 
-// Создаём новое хранилище, подключаемся к БД и создаём таблицу
+// NewDBStorage Создаём новое хранилище, подключаемся к БД и создаём таблицу
 func NewDBStorage(DSN string) *DBStorage {
 	db, err := sql.Open("pgx", DSN)
 	if err != nil {
@@ -26,12 +26,12 @@ func NewDBStorage(DSN string) *DBStorage {
 	return &DBStorage{DSN: DSN, db: db}
 }
 
-// Для БД неактуально, не загружаем данные в мапу
+// Load Для БД неактуально, не загружаем данные в мапу
 func (ds *DBStorage) Load() error {
 	return nil
 }
 
-// Сохраняем данные в мапе и БД
+// Save Сохраняем данные в мапе и БД
 func (ds *DBStorage) Save(newURL URL) (int, error) {
 	_, err := ds.db.Exec(`
         INSERT INTO urls
@@ -45,7 +45,7 @@ func (ds *DBStorage) Save(newURL URL) (int, error) {
 	return 1, err
 }
 
-// Создаём короткую ссылку
+// CreateShortURL Создаём короткую ссылку
 func (ds *DBStorage) CreateShortURL(originalURL string, correlationID string, userID string) (string, error) {
 	// Получаем хэш
 	shortURL := Encryption(originalURL)
@@ -72,7 +72,7 @@ func (ds *DBStorage) CreateShortURL(originalURL string, correlationID string, us
 	return shortURL, errReturn
 }
 
-// Ищем ссылку в хранилище
+// GetURL Ищем ссылку в хранилище
 func (ds *DBStorage) GetURL(shortURL string) (string, error) {
 	ds.mu.Lock()
 	defer ds.mu.Unlock()
@@ -90,7 +90,7 @@ func (ds *DBStorage) GetURL(shortURL string) (string, error) {
 	}
 }
 
-// Получаем все ссылки текущего пользователя
+// GetUserURLs Получаем все ссылки текущего пользователя
 func (ds *DBStorage) GetUserURLs(userID string) ([]URL, error) {
 	ds.mu.Lock()
 	defer ds.mu.Unlock()
@@ -126,16 +126,17 @@ func (ds *DBStorage) GetUserURLs(userID string) ([]URL, error) {
 	}
 }
 
-// Пинг БД
+// Ping Пинг БД
 func (ds *DBStorage) Ping() error {
 	return ds.db.Ping()
 }
 
+// Close Закрытие соединения
 func (ds *DBStorage) Close() error {
 	return ds.db.Close()
 }
 
-// Удаляем переданные ссылки, при условии что они принадлежат указанному пользователю
+// DeleteUserURLs Удаляем переданные ссылки, при условии что они принадлежат указанному пользователю
 func (ds *DBStorage) DeleteUserURLs(userID string, urls []string) error {
 
 	// Создаём горутину, чтобы удалить ссылки асинхронно

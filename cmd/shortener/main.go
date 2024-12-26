@@ -24,6 +24,12 @@ import (
 // Хранилище ссылок
 var storage *s.StorageType
 
+var (
+	buildVersion = "N/A"
+	buildDate    = "N/A"
+	buildCommit  = "N/A"
+)
+
 // postPage хэндлер сокращения ссылок
 func postPage(w http.ResponseWriter, r *http.Request) {
 
@@ -277,6 +283,9 @@ func main() {
 	log.Print("Running server on ", flagRunAddr)
 	log.Print("File storage is ", flagFilePath)
 	log.Print("DB connected at ", flagDataBaseDSN)
+	log.Print("Build version: ", buildVersion)
+	log.Print("Build date: ", buildDate)
+	log.Print("Build commit: ", buildCommit)
 
 	// создаём файл журнала профилирования памяти
 	fmemPath := "./profiles/base.pprof"

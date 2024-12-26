@@ -6,6 +6,7 @@ import (
 	"golang.org/x/tools/go/analysis"
 )
 
+// OsExitAnalyzer анализатор для проверки использования os.Exit в пакете main
 var OsExitAnalyzer = &analysis.Analyzer{
 	Name: "osexitanalyzer",
 	Doc:  "Check os.Exit in main package",

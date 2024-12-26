@@ -49,8 +49,8 @@ func main() {
 		printf.Analyzer,
 		shadow.Analyzer,
 		structtag.Analyzer,
-		errcheck.Analyzer,
-		maligned.Analyzer,
+		errcheck.Analyzer, // проверка ошибок
+		maligned.Analyzer, // проверка структур
 	}
 
 	// добавляем анализаторы из staticcheck и stylecheck, которые указаны в файле конфигурации
